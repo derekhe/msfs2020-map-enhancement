@@ -14,6 +14,14 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.5",
+    "electron-log": "^4.4.1",
+    "electron-store": "^8.0.1",
+    "got": "^11.8.3",
+    "hpagent": "^0.1.2",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^10.1.1",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"

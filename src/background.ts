@@ -1,8 +1,17 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
+import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import { ERROR_NGINX_START_FAILED } from "@/consts/custom-errors";
+import { addCertificate, removeCertificate } from "@/services/certificate";
+import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
+import { startMapServer, stopMapServer } from "@/services/mapServer";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import log from "electron-log";
+import path from "path";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -22,6 +31,7 @@ async function createWindow() {
       nodeIntegration: process.env
         .ELECTRON_NODE_INTEGRATION as unknown as boolean,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -80,3 +90,31 @@ if (isDevelopment) {
     });
   }
 }
+
+ipcMain.on(EVENT_START_SERVER, async (event, arg) => {
+  try {
+    await addCertificate();
+  } catch (e) {
+    log.error(e);
+  }
+
+  patchHostsFile();
+
+  try {
+    await startMapServer();
+  } catch (e) {
+    log.error("Start map server failed", e);
+  }
+});
+
+ipcMain.on(EVENT_STOP_SERVER, async (event, arg) => {
+  removeCertificate();
+  unpatchHostsFile();
+
+  try {
+    await stopMapServer();
+  } catch (e) {
+    log.error("Stop server failed", e);
+    event.reply(ERROR_NGINX_START_FAILED, e);
+  }
+});

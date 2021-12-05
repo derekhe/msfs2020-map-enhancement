@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 #Electron-builder output
 /dist_electron
+/extra/nginx/logs/*.log
+/extra/nginx/logs/*.pid
+/extra/nginx/temp/*temp
