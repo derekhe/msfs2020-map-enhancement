@@ -47,7 +47,7 @@
     "naive-ui": "^2.21.3",
     "prettier": "^2.2.1",
     "sass": "^1.26.5",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "12.4.0",
     "typescript": "~4.1.5",
     "vfonts": "^0.1.0",
     "vue-cli-plugin-electron-builder": "~2.1.1"
