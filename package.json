@@ -22,7 +22,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^10.1.1",
-    "vue": "^3.0.0",
+    "vue": "3.2.26",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"
   },
@@ -36,7 +36,7 @@
     "@vue/cli-plugin-typescript": "~4.5.0",
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/compiler-sfc": "3.2.26",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^7.0.0",
     "electron": "^13.0.0",
