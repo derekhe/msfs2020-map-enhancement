@@ -9,7 +9,7 @@ const { HttpsProxyAgent } = require("hpagent");
 const app = new Koa();
 const router = new Router();
 
-const quadKeyToTileXY = function (quadKey) {
+const quadKeyToTileXY = function(quadKey) {
   let tileX = 0;
   let tileY = 0;
   const levelOfDetail = quadKey.length;
@@ -32,7 +32,10 @@ const quadKeyToTileXY = function (quadKey) {
   return { tileX, tileY, levelOfDetail };
 };
 
-let proxy = "http://192.168.50.15:1082";
+let selectedServer = process.argv[2];
+let proxy = process.argv[3];
+
+console.log(selectedServer, proxy);
 
 router.post("/configs", (ctx, next) => {
   proxy = ctx.request.body.proxy;
@@ -43,27 +46,28 @@ router.post("/configs", (ctx, next) => {
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
-  const server = "khms1.google.com";
+  const server = "khms.google.com";
   const url = `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
 
-  console.log(url, proxy);
-
-  const resp = await got(url, {
+  let options = {
     timeout: {
-      request: 15 * 1000,
+      request: 15 * 1000
     },
-    agent: {
+    agent: proxy != null ? {
       https: new HttpsProxyAgent({
         keepAlive: false,
         maxSockets: 128,
         maxFreeSockets: 128,
         scheduling: "fifo",
-        proxy: proxy,
-      }),
-    },
-  }).buffer();
+        proxy
+      })
+    } : undefined
+  };
 
-  ctx.response.set("content-type", "image/jpeg");
+  console.log(url, proxy);
+
+  const resp = await got(url, options).buffer();
+
   ctx.response.set("Content-Type", "image/jpeg");
   ctx.response.set("Last-Modified", "Sat, 24 Oct 2020 06:48:56 GMT");
   ctx.response.set("ETag", "9580");
