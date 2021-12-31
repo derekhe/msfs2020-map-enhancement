@@ -9,7 +9,7 @@
           <n-collapse :default-expanded-names="['1', '2', '3']">
             <n-collapse-item title="Mod Control" name="1">
               <n-space>
-                <n-switch @update:value="handleServerToggle">
+                <n-switch @update:value="handleServerToggle" :loading="serverStarting" v-model:value="serverStarted">
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
@@ -65,7 +65,9 @@ export default defineComponent({
       googleServers: ["mt.google.com", "khm.google.com"],
       selectedServer: store.get("selectedServer", "mt.google.com"),
       proxyAddress: store.get("proxyAddress", null),
-      proxyTesting: false
+      proxyTesting: false,
+      serverStarting: false,
+      serverStarted: false
     };
   },
   setup() {
@@ -73,13 +75,28 @@ export default defineComponent({
   },
   methods: {
     handleServerToggle(value) {
+      this.serverStarting = true;
+
       if (value) {
-        window.ipcRenderer.send(EVENT_START_SERVER, {
+        window.ipcRenderer.invoke(EVENT_START_SERVER, {
           proxyAddress: this.proxyAddress,
           selectedServer: this.selectedServer
+        }).then((result) => {
+          this.serverStarting = false;
+          if (result.success) {
+            this.serverStarted = true;
+          } else {
+            window.$message.error("Start server failed, error: " + result.error);
+            this.serverStarted = false;
+          }
         });
       } else {
-        window.ipcRenderer.send(EVENT_STOP_SERVER);
+        window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
+          this.serverStarting = false;
+          if (!result.success) {
+            window.$message.error("Stop server failed, error: " + result.error);
+          }
+        });
       }
     },
     updateStore() {
