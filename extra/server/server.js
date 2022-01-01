@@ -5,9 +5,17 @@ const logger = require("koa-logger");
 const bodyParser = require("koa-bodyparser");
 const got = require("got");
 const { HttpsProxyAgent } = require("hpagent");
+const sharp = require("sharp");
 
 const app = new Koa();
 const router = new Router();
+
+const argv = require("minimist")(process.argv.slice(2));
+
+let proxyAddress = argv["proxyAddress"];
+let selectedServer = argv["selectedServer"];
+
+console.log(argv);
 
 const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
@@ -32,13 +40,8 @@ const quadKeyToTileXY = function (quadKey) {
   return { tileX, tileY, levelOfDetail };
 };
 
-let selectedServer = process.argv[2];
-let proxy = process.argv[3];
-
-console.log(selectedServer, proxy);
-
 router.post("/configs", (ctx, next) => {
-  proxy = ctx.request.body.proxy;
+  proxyAddress = ctx.request.body.proxy;
   selectedServer = ctx.request.body.selectedServer;
   console.log(`get proxy config ${JSON.stringify(ctx.request.body)}`);
   ctx.response.status = 200;
@@ -68,20 +71,20 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
       request: 15 * 1000,
     },
     agent:
-      proxy != null
+      proxyAddress != null
         ? {
             https: new HttpsProxyAgent({
               keepAlive: false,
               maxSockets: 128,
               maxFreeSockets: 128,
               scheduling: "fifo",
-              proxy,
+              proxy: proxyAddress,
             }),
           }
         : undefined,
   };
 
-  console.log(url, proxy);
+  console.log(url, proxyAddress);
 
   const resp = await got(url, options).buffer();
 
@@ -96,7 +99,11 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   ctx.response.set("X-VE-TILEMETA-CaptureDatesRang", "1/1/1999-12/31/2003");
   ctx.response.set("X-VE-TILEMETA-CaptureDateMaxYY", "0312");
   ctx.response.set("X-VE-TILEMETA-Product-IDs", "209");
-  ctx.body = resp;
+  ctx.body = await sharp(resp)
+    .modulate({
+      lightness: -5,
+    })
+    .toBuffer();
 });
 
 app
