@@ -9,7 +9,7 @@ const { HttpsProxyAgent } = require("hpagent");
 const app = new Koa();
 const router = new Router();
 
-const quadKeyToTileXY = function(quadKey) {
+const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
   let tileY = 0;
   const levelOfDetail = quadKey.length;
@@ -43,6 +43,11 @@ router.post("/configs", (ctx, next) => {
   ctx.response.status = 200;
 });
 
+router.get("/health", (ctx, next) => {
+  ctx.response.body = "alive";
+  ctx.response.status = 200;
+});
+
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
@@ -51,17 +56,20 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
 
   let options = {
     timeout: {
-      request: 15 * 1000
+      request: 15 * 1000,
     },
-    agent: proxy != null ? {
-      https: new HttpsProxyAgent({
-        keepAlive: false,
-        maxSockets: 128,
-        maxFreeSockets: 128,
-        scheduling: "fifo",
-        proxy
-      })
-    } : undefined
+    agent:
+      proxy != null
+        ? {
+            https: new HttpsProxyAgent({
+              keepAlive: false,
+              maxSockets: 128,
+              maxFreeSockets: 128,
+              scheduling: "fifo",
+              proxy,
+            }),
+          }
+        : undefined,
   };
 
   console.log(url, proxy);

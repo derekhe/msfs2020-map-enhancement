@@ -101,10 +101,10 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
     patchHostsFile();
     await startMapServer(proxyAddress, selectedServer);
     log.info("Start map server success");
-    return {success: true};
+    return { success: true };
   } catch (e) {
     log.error("Start map server failed", e);
-    return {success: false, error: e};
+    return { success: false, error: e };
   }
 });
 
@@ -114,9 +114,9 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
     unpatchHostsFile();
     await stopMapServer();
     log.info("Stop server success");
-    return {success: true};
+    return { success: true };
   } catch (e) {
     log.error("Stop server failed", e);
-    return {success: false, error: e};
+    return { success: false, error: e };
   }
 });
