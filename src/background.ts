@@ -12,6 +12,7 @@ import { startMapServer, stopNginxServer } from "@/services/mapServer";
 // @ts-ignore
 import log from "electron-log";
 import path from "path";
+// @ts-ignore
 import Store from "electron-store";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
