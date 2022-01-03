@@ -3,7 +3,11 @@ import { autoUpdater } from "electron-updater";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
-import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import {
+  EVENT_CHECK_PROXY,
+  EVENT_START_SERVER,
+  EVENT_STOP_SERVER,
+} from "@/consts/custom-events";
 
 import { addCertificate } from "@/services/certificate";
 import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
@@ -124,6 +128,13 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
     log.error("Stop server failed", e);
     return { success: false, error: e };
   }
+});
+
+ipcMain.handle(EVENT_CHECK_PROXY, async () => {
+  const tcpPortUsed = require("tcp-port-used");
+  const result = await tcpPortUsed.check(443, "127.0.0.1");
+  log.info("443 is in use:", result);
+  return result;
 });
 
 async function StopServer() {
