@@ -13,7 +13,9 @@ module.exports = {
         },
         nsis: {
           guid: "6fd47695-9ae0-492c-a3a2-db9be0a547d4",
-          oneClick: true,
+          oneClick: false,
+          allowElevation: true,
+          allowToChangeInstallationDirectory: true,
           perMachine: true,
         },
         publish: ["github"],
