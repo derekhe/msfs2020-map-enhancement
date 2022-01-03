@@ -6,15 +6,23 @@
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
-                <n-alert title="First time usage" type="warning">
-                  A self-signed certificate will be generated and added into trust store when enable this mod for the
+                <n-alert title="First time usage" type="warning" closable>
+                  A self-signed certificate will be generated and added into trust store when you enable this mod for the
                   first time.
                   Please accept the pop-up window otherwise this mod will not work.
+                </n-alert>
+                <n-alert title="Important" type="warning">
+                  <n-ul>
+                    <n-li>Run this mod before MSFS2020, otherwise default bing map may appear randomly</n-li>
+                    <n-li>Setup proxy if your access to google is blocked</n-li>
+                    <n-li>Disable any firewall and antivirus if you have trouble</n-li>
+                  </n-ul>
                 </n-alert>
                 <n-switch
                   @update:value="handleServerToggle"
                   :loading="serverStarting"
                   v-model:value="serverStarted"
+                  size="large"
                 >
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
@@ -45,6 +53,9 @@
                 <n-p>
                   If you need proxy to access google, please fill the proxy
                   address. Format http://ipaddress:port
+                </n-p>
+                <n-p>
+                  Leave blank if you don't need proxy to access google
                 </n-p>
                 <n-space>
                   <n-input
