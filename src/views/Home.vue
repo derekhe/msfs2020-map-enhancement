@@ -6,7 +6,7 @@
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
-                <n-alert title="First time usage" type="warning" closable>
+                <n-alert title="First time usage" type="warning" closable v-if="firstTime">
                   A self-signed certificate will be generated and added into trust store when you enable this mod for
                   the
                   first time.
@@ -28,25 +28,32 @@
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
-                <n-alert title="Health Check" type="success"
-                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Passed && nginxServerHealthCheckResult ===HEALTH_CHECK.Passed">
-                  Passed
-                </n-alert>
-                <n-alert title="Health Check" type="info"
-                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Checking || nginxServerHealthCheckResult ===HEALTH_CHECK.Checking">
-                  Checking
-                </n-alert>
-                <n-alert title="Health Check" type="error"
-                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Failed">
-                  Mock Server Check Failed
-                </n-alert>
-                <n-alert title="Health Check" type="error"
-                         v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Failed">
-                  Nginx Server Check Failed
-                </n-alert>
-                <n-alert title="Proxy" type="error" v-if="proxyTestResult === HEALTH_CHECK.Failed">
-                  Can't access google, please check your proxy setting
-                </n-alert>
+                <n-card bordered v-if="serverStarted">
+                  <n-space vertical size="small">
+                    <n-space align="start">
+                      <n-icon size="20" color="#0e7a0d" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Passed">
+                        <CheckmarkCircle />
+                      </n-icon>
+                      <n-icon size="20" color="#f0a020" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Failed">
+                        <CloseCircle />
+                      </n-icon>
+                      <n-spin size="smaller" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Checking" />
+                      <n-p>Nginx Server Access Check</n-p>
+                    </n-space>
+
+                    <n-space align="start">
+                      <n-icon size="20" color="#0e7a0d" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Passed">
+                        <CheckmarkCircle />
+                      </n-icon>
+                      <n-icon size="20" color="#f0a020" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Failed">
+                        <CloseCircle />
+                      </n-icon>
+                      <n-spin size="smaller" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Checking" />
+                      <n-p>Image Server Access Check</n-p>
+                    </n-space>
+
+                  </n-space>
+                </n-card>
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
@@ -96,9 +103,12 @@
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <n-h4>FAQ</n-h4>
-              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ">FAQ</a> page first</n-p>
+              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ">FAQ</a> page first
+              </n-p>
+              <n-button @click="resetToDefault">Reset to default</n-button>
               <n-h4>Logs</n-h4>
-              <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in <b>{{logDirectory}}</b></n-p>
+              <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in
+                <b>{{ logDirectory }}</b></n-p>
             </n-tab-pane>
           </n-tabs>
         </n-card>
@@ -125,6 +135,8 @@ import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
+import { CheckmarkCircle, CloseCircle } from "@vicons/ionicons5";
+
 
 import log from "electron-log";
 
@@ -132,14 +144,18 @@ const store = new Store();
 import { useMessage } from "naive-ui";
 import { HEALTH_CHECK } from "@/consts/constants";
 
-const messageOptions = {keepAliveOnHover: true, closable: true}
+const messageOptions = { keepAliveOnHover: true, closable: true };
 
-const getDirectory =(path) => {
-  return path.substring(0,path.lastIndexOf("\\")+1);
-}
+const getDirectory = (path) => {
+  return path.substring(0, path.lastIndexOf("\\") + 1);
+};
 
 export default defineComponent({
   name: "Home",
+  components: {
+    CheckmarkCircle,
+    CloseCircle
+  },
   data() {
     return {
       googleServers: ["mt.google.com", "khm.google.com"],
@@ -147,11 +163,12 @@ export default defineComponent({
       proxyAddress: store.get("proxyAddress", ""),
       serverStarting: false,
       serverStarted: false,
-      mockServerHealthCheckResult: null,
+      imageAccessHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
       proxyTestResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
-      logDirectory: getDirectory(log.transports.file.getFile().path)
+      logDirectory: getDirectory(log.transports.file.getFile().path),
+      firstTime: store.get("firstTime", true)
     };
   },
   setup() {
@@ -170,7 +187,7 @@ export default defineComponent({
 
       if (value) {
         log.info("Starting mod");
-        this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
+        this.imageAccessHealthCheckResult = HEALTH_CHECK.Checking;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
 
         window.ipcRenderer
@@ -182,13 +199,11 @@ export default defineComponent({
             log.info("Start mod result", result);
             this.serverStarting = false;
             if (result.success) {
+              this.firstTime = false;
+              store.set("firstTime", this.firstTime);
               this.serverStarted = true;
-              setTimeout(await this.checkMockServer, 10 * 1000);
+              setTimeout(await this.checkImageAccess, 10 * 1000);
               setTimeout(await this.checkNginxServer, 10 * 1000);
-              if (this.proxyAddress) {
-                this.proxyTestResult = HEALTH_CHECK.Checking;
-                setTimeout(await this.checkProxy, 10 * 1000);
-              }
             } else {
               window.$message.error(
                 "Start server failed, error: " + result.error, messageOptions
@@ -199,7 +214,7 @@ export default defineComponent({
           });
       } else {
         log.info("Stopping mod");
-        this.mockServerHealthCheckResult = HEALTH_CHECK.NotStarted;
+        this.imageAccessHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.proxyTestResult = HEALTH_CHECK.NotStarted;
         window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
@@ -261,31 +276,6 @@ export default defineComponent({
         this.proxyTestResult = HEALTH_CHECK.Failed;
       }
     },
-    async checkMockServer() {
-      const url = `https://kh.ssl.ak.tiles.virtualearth.net/health`;
-
-      let options = {
-        timeout: {
-          request: 15 * 1000
-        },
-        rejectUnauthorized: false
-      };
-      try {
-        log.info("Checking mock server");
-        const resp = await got(url, options);
-
-        log.info("Mock server response", resp.statusCode, resp.body);
-
-        if (resp.statusCode === 200 && resp.body === "alive") {
-          this.mockServerHealthCheckResult = HEALTH_CHECK.Passed;
-        } else {
-          this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
-        }
-      } catch (ex) {
-        log.error(ex);
-        this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
-      }
-    },
     async checkNginxServer() {
       const url = "https://khstorelive.azureedge.net/results/v1.20.0/coverage_maps/lod_8/12202100.cov?version=3";
 
@@ -313,13 +303,40 @@ export default defineComponent({
           this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
         }
       }
+    },
+    async checkImageAccess() {
+      const url = `http://localhost:39871/tiles/akh12101.jpeg?n=z&g=9580`;
+
+      let options = {
+        timeout: {
+          request: 15 * 1000
+        },
+        rejectUnauthorized: false
+      };
+      try {
+        log.info("Checking image access");
+        const resp = await got(url, options);
+
+        log.info("image server response", resp.statusCode);
+
+        if (resp.statusCode === 200) {
+          this.imageAccessHealthCheckResult = HEALTH_CHECK.Passed;
+        } else {
+          this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
+        }
+      } catch (ex) {
+        log.error("Image server error", ex);
+        this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
+      }
+    },
+    async resetToDefault() {
+      store.clear();
+      await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
+      window.$message.warning("Please restart to take effect");
     }
   }
 });
 </script>
 
 <style scoped>
-.n-gradient-text {
-  font-size: 36px;
-}
 </style>
