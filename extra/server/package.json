@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "main": "background.js",
   "dependencies": {
+    "electron-log": "^4.4.4",
     "got": "^11.8.3",
     "hpagent": "^0.1.2",
     "koa": "^2.13.4",

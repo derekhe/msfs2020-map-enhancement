@@ -94,6 +94,12 @@
                 </n-space>
               </n-radio-group>
             </n-tab-pane>
+            <n-tab-pane name="Debug" tab="Trouble Shooting">
+              <n-h4>FAQ</n-h4>
+              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ">FAQ</a> page first</n-p>
+              <n-h4>Logs</n-h4>
+              <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in <b>{{logDirectory}}</b></n-p>
+            </n-tab-pane>
           </n-tabs>
         </n-card>
       </n-layout-content>
@@ -128,6 +134,10 @@ import { HEALTH_CHECK } from "@/consts/constants";
 
 const messageOptions = {keepAliveOnHover: true, closable: true}
 
+const getDirectory =(path) => {
+  return path.substring(0,path.lastIndexOf("\\")+1);
+}
+
 export default defineComponent({
   name: "Home",
   data() {
@@ -140,7 +150,8 @@ export default defineComponent({
       mockServerHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
       proxyTestResult: null,
-      HEALTH_CHECK: HEALTH_CHECK
+      HEALTH_CHECK: HEALTH_CHECK,
+      logDirectory: getDirectory(log.transports.file.getFile().path)
     };
   },
   setup() {
