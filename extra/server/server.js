@@ -71,7 +71,7 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
       request: 15 * 1000,
     },
     agent:
-      proxyAddress != null
+      proxyAddress
         ? {
             https: new HttpsProxyAgent({
               keepAlive: false,

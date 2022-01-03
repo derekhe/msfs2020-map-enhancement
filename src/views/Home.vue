@@ -107,7 +107,7 @@ export default defineComponent({
     return {
       googleServers: ["mt.google.com", "khm.google.com"],
       selectedServer: store.get("selectedServer", "mt.google.com"),
-      proxyAddress: store.get("proxyAddress", null),
+      proxyAddress: store.get("proxyAddress", ""),
       serverStarting: false,
       serverStarted: false,
       mockServerHealthCheckResult: null,
@@ -184,9 +184,9 @@ export default defineComponent({
 
       let options = {
         timeout: {
-          request: 15 * 1000
+          request: 5 * 1000,
         },
-        agent: {
+        agent: this.proxyAddress ? {
           https: new HttpsProxyAgent({
             keepAlive: false,
             maxSockets: 128,
@@ -194,8 +194,9 @@ export default defineComponent({
             scheduling: "fifo",
             proxy: this.proxyAddress
           })
-        }
+        } : undefined
       };
+
       try {
         this.proxyTestResult = HEALTH_CHECK.Checking;
         const resp = await got(url, options);
