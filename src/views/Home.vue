@@ -29,7 +29,7 @@
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
-                <n-card bordered v-if="serverStarted">
+                <n-card bordered v-if="serverStarted" title="Server check" size="small">
                   <n-space vertical size="small">
                     <n-space align="start">
                       <n-icon size="20" color="#0e7a0d" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Passed">
@@ -41,7 +41,6 @@
                       <n-spin size="smaller" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Checking" />
                       <n-p>Nginx Server Access Check</n-p>
                     </n-space>
-
                     <n-space align="start">
                       <n-icon size="20" color="#0e7a0d" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Passed">
                         <CheckmarkCircle />
@@ -52,7 +51,18 @@
                       <n-spin size="smaller" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Checking" />
                       <n-p>Image Server Access Check</n-p>
                     </n-space>
-
+                  </n-space>
+                </n-card>
+                <n-card bordered v-if="healthCheckPassed" title="Runtime Info" size="small">
+                  <n-space vertical size="small">
+                    <n-p>Image loaded {{ statics.numOfImageLoaded }}</n-p>
+                    <n-p>Last loaded time {{ statics.lastLoadTime }}</n-p>
+                    <n-p>Last loaded url {{ statics.lastLoadingImageUrl }}</n-p>
+                    <n-p>Recent loaded image</n-p>
+                    <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
+                    <n-tag type="warning">It is running now. If you like this mod, please help me improve it by <a
+                      href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US">donating</a>
+                    </n-tag>
                   </n-space>
                 </n-card>
               </n-space>
@@ -169,22 +179,41 @@ export default defineComponent({
       proxyTestResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
       logDirectory: getDirectory(log.transports.file.getFile().path),
-      firstTime: store.get("firstTime", true)
+      firstTime: store.get("firstTime", true),
+      imageRnd: 0,
+      statics: {
+        numOfImageLoaded: 0,
+        lastLoadingImageUrl: 0,
+        lastLoadTime: 0
+      }
     };
   },
   setup() {
     window.$message = useMessage();
-
   },
   computed: {
     proxyChecking: {
       get() {
         return this.proxyTestResult === HEALTH_CHECK.Checking;
       }
+    },
+    healthCheckPassed: {
+      get() {
+        return this.nginxServerHealthCheckResult == HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
+      }
+    },
+    loadedImageUrl: {
+      get() {
+        return "http://localhost:39871/last-image?rnd=" + this.imageRnd;
+      }
     }
   },
   async mounted() {
-    setTimeout(await this.check443Port, 3000);
+    setTimeout(await this.check443Port, 500);
+    setInterval(() => {
+      this.imageRnd = new Date();
+    }, 100, 100);
+    setInterval(await this.getStaticInfo, 1000, 1000);
   },
   methods: {
     async handleServerToggle(value) {
@@ -342,6 +371,15 @@ export default defineComponent({
       if (result) {
         window.$message.error("443 Port is using, the mod won't work. Please close any application using 443 port. Look at the FAQ page here: https://github.com/derekhe/msfs2020-google-map/wiki/FAQ#443-port-is-occupied", messageOptions);
       }
+    },
+    async getStaticInfo() {
+      if (this.imageAccessHealthCheckResult !== HEALTH_CHECK.Passed) return;
+
+      this.statics = await got.get("http://localhost:39871/statics", {
+        timeout: {
+          request: 2 * 1000
+        }
+      }).json();
     }
   }
 });
