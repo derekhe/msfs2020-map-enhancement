@@ -1,5 +1,9 @@
 {
-  "name": "msfs2020-electron",
+  "name": "msfs2020-map-enhancement",
+  "author": {
+    "name": "He Sicong"
+  },
+  "description": "Microsoft Flight Simulator 2020 map enhancement tool",
   "version": "0.0.2",
   "private": true,
   "scripts": {

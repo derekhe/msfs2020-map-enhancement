@@ -1,7 +1,7 @@
 <template>
-    <n-message-provider>
-      <RouterView />
-    </n-message-provider>
+  <n-message-provider>
+    <RouterView />
+  </n-message-provider>
 </template>
 
 <script>

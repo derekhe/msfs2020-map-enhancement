@@ -7,6 +7,7 @@ import util from "util";
 const execAsync = util.promisify(execFile);
 
 export const addCertificate = async (): Promise<void> => {
+  log.info("Adding certificate")
   const { stdout } = await execAsync(
     "mkcert.exe",
     [
@@ -25,5 +26,5 @@ export const addCertificate = async (): Promise<void> => {
       shell: true,
     }
   );
-  log.info(stdout);
+  log.info("Added certificate", stdout);
 };
