@@ -5,12 +5,17 @@ import log from "electron-log";
 
 export function patchHostsFile(): void {
   log.info("Patching hosts");
-  let hosts = fs
-    .readFileSync("C:\\windows\\system32\\drivers\\etc\\hosts")
-    .toString();
+
+  let hostFilePath = "C:\\windows\\system32\\drivers\\etc\\hosts";
+  let hosts = fs.existsSync(hostFilePath)
+    ? fs.readFileSync(hostFilePath).toString()
+    : "";
+
   hosts +=
     "\n127.0.0.1 kh.ssl.ak.tiles.virtualearth.net\r\n127.0.0.1 khstorelive.azureedge.net\r\n";
-  fs.writeFileSync("C:\\windows\\system32\\drivers\\etc\\hosts", hosts);
+  fs.writeFileSync(hostFilePath, hosts, {
+    flag: "w"
+  });
   log.info("Hosts patched", hosts);
 }
 
