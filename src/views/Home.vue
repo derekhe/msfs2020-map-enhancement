@@ -3,6 +3,17 @@
     <n-layout content-style="padding: 24px;" style="height: 100%">
       <n-layout-content>
         <n-card v-bind:title="'MSFS2020 Map Replacement v' + appVersion" style="margin-bottom: 16px">
+          <n-alert title="Update available" type="warning" closable v-if="updateAvailable">
+            <n-space vertical size="small">
+              <n-collapse>
+                <n-collapse-item v-bind:title="'New Version:' + updateInfo.releaseName" name="1">
+                  <n-p v-html="updateInfo.releaseNotes"></n-p>
+                  <a href="https://flightsim.to/file/19345/msfs-2020-google-map-replacement" target="_blank">Download and
+                    install from FlightSim.to</a>
+                </n-collapse-item>
+              </n-collapse>
+            </n-space>
+          </n-alert>
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
@@ -114,7 +125,8 @@
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <n-h4>FAQ</n-h4>
-              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ" target="_blank">FAQ</a> page first
+              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ" target="_blank">FAQ</a>
+                page first
               </n-p>
               <n-button @click="resetToDefault">Reset to default</n-button>
               <n-h4>Logs</n-h4>
@@ -142,7 +154,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { EVENT_CHECK_PROXY, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import { EVENT_CHECK_PORT, EVENT_CHECK_UPDATE, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
@@ -186,7 +198,9 @@ export default defineComponent({
         lastLoadingImageUrl: 0,
         lastLoadTime: 0
       },
-      appVersion: window.require("electron").remote.app.getVersion()
+      appVersion: window.require("electron").remote.app.getVersion(),
+      updateAvailable: false,
+      updateInfo: {}
     };
   },
   setup() {
@@ -200,7 +214,7 @@ export default defineComponent({
     },
     healthCheckPassed: {
       get() {
-        return this.nginxServerHealthCheckResult == HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
+        return this.nginxServerHealthCheckResult === HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
       }
     },
     loadedImageUrl: {
@@ -215,6 +229,7 @@ export default defineComponent({
       this.imageRnd = new Date();
     }, 100, 100);
     setInterval(await this.getStaticInfo, 1000, 1000);
+    setTimeout(await this.checkAppUpdate, 2000);
   },
   methods: {
     async handleServerToggle(value) {
@@ -368,7 +383,7 @@ export default defineComponent({
       window.$message.warning("Please restart to take effect");
     },
     async check443Port() {
-      const result = await window.ipcRenderer.invoke(EVENT_CHECK_PROXY);
+      const result = await window.ipcRenderer.invoke(EVENT_CHECK_PORT);
       if (result) {
         window.$message.error("443 Port is using, the mod won't work. Please close any application using 443 port. Look at the FAQ page here: https://github.com/derekhe/msfs2020-google-map/wiki/FAQ#443-port-is-occupied", messageOptions);
       }
@@ -381,6 +396,16 @@ export default defineComponent({
           request: 2 * 1000
         }
       }).json();
+    },
+    async checkAppUpdate() {
+      const updateCheckResult = await window.ipcRenderer.invoke(EVENT_CHECK_UPDATE);
+      console.log(updateCheckResult);
+      this.updateAvailable = this.appVersion !== updateCheckResult.appVersion;
+      if (!this.updateAvailable) {
+        log.info("No update version");
+        return;
+      }
+      this.updateInfo = updateCheckResult;
     }
   }
 });
