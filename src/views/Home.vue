@@ -2,7 +2,7 @@
   <n-message-provider>
     <n-layout content-style="padding: 24px;" style="height: 100%">
       <n-layout-content>
-        <n-card title="MSFS2020 Map Enhancement" style="margin-bottom: 16px">
+        <n-card v-bind:title="'MSFS2020 Map Replacement v' + appVersion" style="margin-bottom: 16px">
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
@@ -185,7 +185,8 @@ export default defineComponent({
         numOfImageLoaded: 0,
         lastLoadingImageUrl: 0,
         lastLoadTime: 0
-      }
+      },
+      appVersion: window.require("electron").remote.app.getVersion()
     };
   },
   setup() {
