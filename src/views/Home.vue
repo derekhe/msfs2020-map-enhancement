@@ -114,7 +114,7 @@
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <n-h4>FAQ</n-h4>
-              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ">FAQ</a> page first
+              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ" target="_blank">FAQ</a> page first
               </n-p>
               <n-button @click="resetToDefault">Reset to default</n-button>
               <n-h4>Logs</n-h4>
@@ -130,9 +130,9 @@
       >
         <n-space>
           <n-p>Author: He Sicong</n-p>
-          <a href="https://github.com/derekhe/msfs2020-google-map-electron">Home Page</a>
-          <a href="https://zh.flightsim.to/file/19345/msfs-2020-google-map-replacement">Discussion</a>
-          <a href="https://github.com/derekhe/msfs2020-google-map/issues">Report Issue</a>
+          <a href="https://github.com/derekhe/msfs2020-google-map-electron" target="_blank">Home Page</a>
+          <a href="https://zh.flightsim.to/file/19345/msfs-2020-google-map-replacement" target="_blank">Discussion</a>
+          <a href="https://github.com/derekhe/msfs2020-google-map/issues" target="_blank">Report Issue</a>
           <a href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US" target="_blank">Donate</a>
         </n-space>
       </n-layout-footer>
