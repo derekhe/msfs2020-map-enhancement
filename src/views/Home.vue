@@ -57,32 +57,7 @@
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
-              <n-space vertical>
-                <n-p>
-                  If you need proxy to access google, please fill the proxy
-                  address. Format http://ipaddress:port
-                </n-p>
-                <n-p>
-                  Leave blank if you don't need proxy to access google
-                </n-p>
-                <n-space>
-                  <n-input
-                    v-model:value="proxyAddress"
-                    type="text"
-                    placeholder="http://ipaddress:port"
-                    @change="updateConfig"
-                  />
-                  <n-button @click="checkProxy" v-model:loading="proxyChecking">
-                    Test Proxy
-                  </n-button>
-                </n-space>
-                <n-alert title="Proxy" type="info" v-if="proxyTestResult === HEALTH_CHECK.Passed">
-                  Proxy check passed
-                </n-alert>
-                <n-alert title="Proxy" type="error" v-if="proxyTestResult === HEALTH_CHECK.Failed">
-                  Can't access google, please check your proxy setting
-                </n-alert>
-              </n-space>
+              <ProxySettings />
             </n-tab-pane>
             <n-tab-pane name="Map Server" tab="Map Server">
               <n-radio-group
@@ -136,6 +111,7 @@ import Footer from "@/components/Footer";
 import FirstTime from "@/components/FirstTime";
 import UpdateNotification from "@/components/UpdateNotification";
 import Important from "@/components/Important";
+import ProxySettings from "@/components/ProxySettings";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -146,6 +122,7 @@ const getDirectory = (path) => {
 export default defineComponent({
   name: "Home",
   components: {
+    ProxySettings,
     Important,
     FirstTime,
     CheckmarkCircle,
@@ -157,12 +134,10 @@ export default defineComponent({
     return {
       googleServers: ["mt.google.com", "khm.google.com"],
       selectedServer: store.get("selectedServer", "mt.google.com"),
-      proxyAddress: store.get("proxyAddress", ""),
       serverStarting: false,
       serverStarted: false,
       imageAccessHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
-      proxyTestResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
       logDirectory: getDirectory(log.transports.file.getFile().path),
       imageRnd: 0,
@@ -178,11 +153,7 @@ export default defineComponent({
     window.$message = useMessage();
   },
   computed: {
-    proxyChecking: {
-      get() {
-        return this.proxyTestResult === HEALTH_CHECK.Checking;
-      }
-    },
+
     healthCheckPassed: {
       get() {
         return this.nginxServerHealthCheckResult === HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
@@ -259,40 +230,6 @@ export default defineComponent({
       }
 
       log.info("Updated config");
-    },
-    async checkProxy() {
-      log.info("Checking proxy", this.proxyAddress);
-      const url = `https://khm.google.com/kh/v=908?x=1&y=1&z=1`;
-
-      let options = {
-        timeout: {
-          request: 5 * 1000
-        },
-        agent: this.proxyAddress ? {
-          https: new HttpsProxyAgent({
-            keepAlive: false,
-            maxSockets: 128,
-            maxFreeSockets: 128,
-            scheduling: "fifo",
-            proxy: this.proxyAddress
-          })
-        } : undefined
-      };
-
-      try {
-        this.proxyTestResult = HEALTH_CHECK.Checking;
-        const resp = await got(url, options);
-
-        log.info("Check proxy result", resp.statusCode);
-        if (resp.statusCode === 200) {
-          this.proxyTestResult = HEALTH_CHECK.Passed;
-        } else {
-          this.proxyTestResult = HEALTH_CHECK.Failed;
-        }
-      } catch (ex) {
-        log.info("Check proxy failed", ex);
-        this.proxyTestResult = HEALTH_CHECK.Failed;
-      }
     },
     async checkNginxServer() {
       const url = "https://khstorelive.azureedge.net/results/v1.20.0/coverage_maps/lod_8/12202100.cov?version=3";
