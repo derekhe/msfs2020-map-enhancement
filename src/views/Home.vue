@@ -42,18 +42,7 @@
                     </n-space>
                   </n-space>
                 </n-card>
-                <n-card bordered v-if="healthCheckPassed" title="Runtime Info" size="small">
-                  <n-space vertical size="small">
-                    <n-p>Image loaded {{ statics.numOfImageLoaded }}</n-p>
-                    <n-p>Last loaded time {{ statics.lastLoadTime }}</n-p>
-                    <n-p>Last loaded url {{ statics.lastLoadingImageUrl }}</n-p>
-                    <n-p>Recent loaded image</n-p>
-                    <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
-                    <n-tag type="warning">It is running now. If you like this mod, please help me improve it by <a
-                      href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US">donating</a>
-                    </n-tag>
-                  </n-space>
-                </n-card>
+                <RuntimeInfo v-if="healthCheckPassed" />
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
@@ -99,7 +88,6 @@ import { defineComponent } from "vue";
 import { EVENT_CHECK_PORT, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
-import { HttpsProxyAgent } from "hpagent";
 import { CheckmarkCircle, CloseCircle } from "@vicons/ionicons5";
 
 import log from "electron-log";
@@ -112,6 +100,7 @@ import FirstTime from "@/components/FirstTime";
 import UpdateNotification from "@/components/UpdateNotification";
 import Important from "@/components/Important";
 import ProxySettings from "@/components/ProxySettings";
+import RuntimeInfo from "@/components/RuntimeInfo";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -122,6 +111,7 @@ const getDirectory = (path) => {
 export default defineComponent({
   name: "Home",
   components: {
+    RuntimeInfo,
     ProxySettings,
     Important,
     FirstTime,
@@ -140,12 +130,6 @@ export default defineComponent({
       nginxServerHealthCheckResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
       logDirectory: getDirectory(log.transports.file.getFile().path),
-      imageRnd: 0,
-      statics: {
-        numOfImageLoaded: 0,
-        lastLoadingImageUrl: 0,
-        lastLoadTime: 0
-      },
       appVersion: window.require("electron").remote.app.getVersion()
     };
   },
@@ -153,16 +137,8 @@ export default defineComponent({
     window.$message = useMessage();
   },
   computed: {
-
-    healthCheckPassed: {
-      get() {
-        return this.nginxServerHealthCheckResult === HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
-      }
-    },
-    loadedImageUrl: {
-      get() {
-        return "http://localhost:39871/last-image?rnd=" + this.imageRnd;
-      }
+    healthCheckPassed() {
+      return this.nginxServerHealthCheckResult === HEALTH_CHECK.Passed && this.imageAccessHealthCheckResult === HEALTH_CHECK.Passed;
     }
   },
   async mounted() {
@@ -170,11 +146,12 @@ export default defineComponent({
     setInterval(() => {
       this.imageRnd = new Date();
     }, 100, 100);
-    setInterval(await this.getStaticInfo, 1000, 1000);
   },
   methods: {
     async handleServerToggle(value) {
       this.serverStarting = true;
+      const proxyAddress = store.get("proxyAddress", "");
+      const selectedServer = store.get("selectedServer", "mt.google.com");
 
       if (value) {
         log.info("Starting mod");
@@ -183,8 +160,7 @@ export default defineComponent({
 
         const result = await window.ipcRenderer
           .invoke(EVENT_START_SERVER, {
-            proxyAddress: this.proxyAddress,
-            selectedServer: this.selectedServer
+            proxyAddress, selectedServer
           });
 
         log.info("Start mod result", result);
@@ -216,14 +192,12 @@ export default defineComponent({
       }
     },
     async updateConfig() {
-      log.info("Updating config", this.proxyAddress, this.selectedServer);
-      store.set("proxyAddress", this.proxyAddress);
+      log.info("Updating config", this.selectedServer);
       store.set("selectedServer", this.selectedServer);
 
       if (this.serverStarted) {
         await got.post("http://localhost:39871/configs", {
           json: {
-            proxy: this.proxyAddress,
             selectedServer: this.selectedServer
           }
         });
@@ -294,15 +268,6 @@ export default defineComponent({
       if (result) {
         window.$message.error("443 Port is using, the mod won't work. Please close any application using 443 port. Look at the FAQ page here: https://github.com/derekhe/msfs2020-google-map/wiki/FAQ#443-port-is-occupied", messageOptions);
       }
-    },
-    async getStaticInfo() {
-      if (this.imageAccessHealthCheckResult !== HEALTH_CHECK.Passed) return;
-
-      this.statics = await got.get("http://localhost:39871/statics", {
-        timeout: {
-          request: 2 * 1000
-        }
-      }).json();
     }
   }
 });

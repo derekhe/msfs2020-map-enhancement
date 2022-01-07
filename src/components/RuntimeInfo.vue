@@ -1,0 +1,50 @@
+<template>
+  <n-card bordered title="Runtime Info" size="small">
+    <n-space vertical size="small">
+      <n-p>Image loaded {{ statics.numOfImageLoaded }}</n-p>
+      <n-p>Last loaded time {{ statics.lastLoadTime }}</n-p>
+      <n-p>Last loaded url {{ statics.lastLoadingImageUrl }}</n-p>
+      <n-p>Recent loaded image</n-p>
+      <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
+      <n-tag type="warning">It is running now. If you like this mod, please help me improve it by <a
+        href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US">donating</a>
+      </n-tag>
+    </n-space>
+  </n-card>
+</template>
+
+<script>
+import { defineComponent } from "vue";
+import got from "got";
+
+export default defineComponent({
+  name: "RuntimeInfo",
+  data() {
+    return {
+      imageRnd: 0,
+      statics: {
+        numOfImageLoaded: 0,
+        lastLoadingImageUrl: 0,
+        lastLoadTime: 0
+      }
+    };
+  },
+  async mounted() {
+    setInterval(await this.getStaticInfo, 1000, 1000);
+  },
+  computed: {
+    loadedImageUrl() {
+      return "http://localhost:39871/last-image?rnd=" + this.imageRnd;
+    }
+  },
+  methods: {
+    async getStaticInfo() {
+      this.statics = await got.get("http://localhost:39871/statics", {
+        timeout: {
+          request: 2 * 1000
+        }
+      }).json();
+    }
+  }
+});
+</script>
