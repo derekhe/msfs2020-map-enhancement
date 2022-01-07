@@ -49,31 +49,10 @@
               <ProxySettings />
             </n-tab-pane>
             <n-tab-pane name="Map Server" tab="Map Server">
-              <n-radio-group
-                v-model:value="selectedServer"
-                name="radiogroup"
-                @change="updateConfig"
-              >
-                <n-space>
-                  <n-radio
-                    v-for="server in googleServers"
-                    :key="server"
-                    :value="server"
-                  >
-                    {{ server }}
-                  </n-radio>
-                </n-space>
-              </n-radio-group>
+              <ServerSelection/>
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
-              <n-h4>FAQ</n-h4>
-              <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ" target="_blank">FAQ</a>
-                page first
-              </n-p>
-              <n-button @click="resetToDefault">Reset to default</n-button>
-              <n-h4>Logs</n-h4>
-              <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in
-                <b>{{ logDirectory }}</b></n-p>
+              <Debug/>
             </n-tab-pane>
           </n-tabs>
         </n-card>
@@ -101,16 +80,16 @@ import UpdateNotification from "@/components/UpdateNotification";
 import Important from "@/components/Important";
 import ProxySettings from "@/components/ProxySettings";
 import RuntimeInfo from "@/components/RuntimeInfo";
+import Debug from "@/components/Debug";
+import ServerSelection from "@/components/ServerSelection";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
-
-const getDirectory = (path) => {
-  return path.substring(0, path.lastIndexOf("\\") + 1);
-};
 
 export default defineComponent({
   name: "Home",
   components: {
+    ServerSelection,
+    Debug,
     RuntimeInfo,
     ProxySettings,
     Important,
@@ -122,14 +101,11 @@ export default defineComponent({
   },
   data() {
     return {
-      googleServers: ["mt.google.com", "khm.google.com"],
-      selectedServer: store.get("selectedServer", "mt.google.com"),
       serverStarting: false,
       serverStarted: false,
       imageAccessHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
-      logDirectory: getDirectory(log.transports.file.getFile().path),
       appVersion: window.require("electron").remote.app.getVersion()
     };
   },
@@ -190,20 +166,6 @@ export default defineComponent({
           log.info("Stop mod failed, error", result.error);
         }
       }
-    },
-    async updateConfig() {
-      log.info("Updating config", this.selectedServer);
-      store.set("selectedServer", this.selectedServer);
-
-      if (this.serverStarted) {
-        await got.post("http://localhost:39871/configs", {
-          json: {
-            selectedServer: this.selectedServer
-          }
-        });
-      }
-
-      log.info("Updated config");
     },
     async checkNginxServer() {
       const url = "https://khstorelive.azureedge.net/results/v1.20.0/coverage_maps/lod_8/12202100.cov?version=3";
