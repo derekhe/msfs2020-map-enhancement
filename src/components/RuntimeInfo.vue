@@ -17,6 +17,10 @@
 import { defineComponent } from "vue";
 import got from "got";
 
+
+let getStaticInfoInterval = null;
+let imageRndInterval = null;
+
 export default defineComponent({
   name: "RuntimeInfo",
   data() {
@@ -30,7 +34,14 @@ export default defineComponent({
     };
   },
   async mounted() {
-    setInterval(await this.getStaticInfo, 1000, 1000);
+    getStaticInfoInterval = setInterval(await this.getStaticInfo, 1000, 1000);
+    imageRndInterval = setInterval(() => {
+      this.imageRnd = new Date();
+    }, 100, 100);
+  },
+  async unmounted() {
+    clearInterval(getStaticInfoInterval);
+    clearInterval(imageRndInterval);
   },
   computed: {
     loadedImageUrl() {
