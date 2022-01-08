@@ -8,12 +8,12 @@
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
                 <FirstTime />
-                <Important v-if="!serverStarted" />
+                <Important v-if="serverStatus!==SERVER_STATUS.Started" />
                 <n-switch
                   @update:value="handleServerToggle"
-                  :loading="serverStarting"
-                  v-model:value="serverStarted"
+                  :loading="serverStatus===SERVER_STATUS.Starting"
                   size="large"
+                  v-model:value="serverStarted"
                 >
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
@@ -79,6 +79,7 @@ export default defineComponent({
   },
   data() {
     return {
+      serverStarted: false,
       serverStatus: SERVER_STATUS.Stopped,
       imageAccessHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
@@ -206,11 +207,6 @@ export default defineComponent({
         log.error("Image server error", ex);
         this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
       }
-    },
-    async resetToDefault() {
-      store.clear();
-      await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
-      window.$message.warning("Please restart to take effect");
     },
     async check443Port() {
       const result = await window.ipcRenderer.invoke(EVENT_CHECK_PORT);
