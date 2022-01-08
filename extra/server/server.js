@@ -15,6 +15,7 @@ const argv = require("minimist")(process.argv.slice(2));
 let proxyAddress = argv["proxyAddress"];
 let selectedServer = argv["selectedServer"];
 let log = require("electron-log");
+const moment = require("moment");
 
 log.info("Starting mock server, arguments:", argv);
 
@@ -134,7 +135,7 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   lastLoadedImage = image;
   statics.numOfImageLoaded += 1;
   statics.lastLoadingImageUrl = url;
-  statics.lastLoadTime = new Date();
+  statics.lastLoadTime = moment().timestamp;
 });
 
 app

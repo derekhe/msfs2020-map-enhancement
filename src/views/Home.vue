@@ -18,30 +18,9 @@
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
-                <n-card bordered v-if="serverStarted" title="Server check" size="small">
-                  <n-space vertical size="small">
-                    <n-space align="start">
-                      <n-icon size="20" color="#0e7a0d" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Passed">
-                        <CheckmarkCircle />
-                      </n-icon>
-                      <n-icon size="20" color="#f0a020" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Failed">
-                        <CloseCircle />
-                      </n-icon>
-                      <n-spin size="smaller" v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Checking" />
-                      <n-p>Nginx Server Access Check</n-p>
-                    </n-space>
-                    <n-space align="start">
-                      <n-icon size="20" color="#0e7a0d" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Passed">
-                        <CheckmarkCircle />
-                      </n-icon>
-                      <n-icon size="20" color="#f0a020" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Failed">
-                        <CloseCircle />
-                      </n-icon>
-                      <n-spin size="smaller" v-if="imageAccessHealthCheckResult === HEALTH_CHECK.Checking" />
-                      <n-p>Image Server Access Check</n-p>
-                    </n-space>
-                  </n-space>
-                </n-card>
+                <ServerCheck v-if="serverStatus===SERVER_STATUS.Started"
+                             v-bind:image-access-health-check-result="imageAccessHealthCheckResult"
+                             v-bind:nginx-server-health-check-result="nginxServerHealthCheckResult" />
                 <RuntimeInfo v-if="healthCheckPassed" />
               </n-space>
             </n-tab-pane>
@@ -49,10 +28,10 @@
               <ProxySettings />
             </n-tab-pane>
             <n-tab-pane name="Map Server" tab="Map Server">
-              <ServerSelection/>
+              <ServerSelection />
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
-              <Debug/>
+              <Debug />
             </n-tab-pane>
           </n-tabs>
         </n-card>
@@ -67,13 +46,12 @@ import { defineComponent } from "vue";
 import { EVENT_CHECK_PORT, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
-import { CheckmarkCircle, CloseCircle } from "@vicons/ionicons5";
 
 import log from "electron-log";
 
 const store = new Store();
 import { useMessage } from "naive-ui";
-import { HEALTH_CHECK } from "@/consts/constants";
+import { HEALTH_CHECK, SERVER_STATUS } from "@/consts/constants";
 import Footer from "@/components/Footer";
 import FirstTime from "@/components/FirstTime";
 import UpdateNotification from "@/components/UpdateNotification";
@@ -82,30 +60,30 @@ import ProxySettings from "@/components/ProxySettings";
 import RuntimeInfo from "@/components/RuntimeInfo";
 import Debug from "@/components/Debug";
 import ServerSelection from "@/components/ServerSelection";
+import ServerCheck from "@/components/ServerCheck";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
 export default defineComponent({
   name: "Home",
   components: {
+    ServerCheck,
     ServerSelection,
     Debug,
     RuntimeInfo,
     ProxySettings,
     Important,
     FirstTime,
-    CheckmarkCircle,
-    CloseCircle,
     Footer,
     UpdateNotification
   },
   data() {
     return {
-      serverStarting: false,
-      serverStarted: false,
+      serverStatus: SERVER_STATUS.Stopped,
       imageAccessHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
+      SERVER_STATUS: SERVER_STATUS,
       appVersion: window.require("electron").remote.app.getVersion()
     };
   },
@@ -122,46 +100,58 @@ export default defineComponent({
   },
   methods: {
     async handleServerToggle(value) {
-      this.serverStarting = true;
+      if (value) {
+        await this.startServer();
+      } else {
+        await this.stopServer();
+      }
+    },
+    async startServer() {
+      log.info("Starting mod");
+      this.imageAccessHealthCheckResult = HEALTH_CHECK.Checking;
+      this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
+      this.serverStatus = SERVER_STATUS.Starting;
+
       const proxyAddress = store.get("proxyAddress", "");
       const selectedServer = store.get("selectedServer", "mt.google.com");
 
-      if (value) {
-        log.info("Starting mod");
-        this.imageAccessHealthCheckResult = HEALTH_CHECK.Checking;
-        this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
+      const result = await window.ipcRenderer
+        .invoke(EVENT_START_SERVER, {
+          proxyAddress, selectedServer
+        });
 
-        const result = await window.ipcRenderer
-          .invoke(EVENT_START_SERVER, {
-            proxyAddress, selectedServer
-          });
+      log.info("Start mod result", result);
 
-        log.info("Start mod result", result);
-        this.serverStarting = false;
-        if (result.success) {
-          this.firstTime = false;
-          store.set("firstTime", this.firstTime);
-          this.serverStarted = true;
-          setTimeout(await this.checkImageAccess, 10 * 1000);
-          setTimeout(await this.checkNginxServer, 10 * 1000);
-        } else {
-          window.$message.error(
-            "Start server failed, error: " + result.error, messageOptions
-          );
-          log.info("Start mod failed", result.error);
-          this.serverStarted = false;
-        }
+      if (result.success) {
+        this.serverStatus = SERVER_STATUS.Started;
+
+        this.firstTime = false;
+        store.set("firstTime", this.firstTime);
+
+        setTimeout(await this.checkImageAccess, 10 * 1000);
+        setTimeout(await this.checkNginxServer, 10 * 1000);
       } else {
-        log.info("Stopping mod");
-        this.imageAccessHealthCheckResult = HEALTH_CHECK.NotStarted;
-        this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
-        this.proxyTestResult = HEALTH_CHECK.NotStarted;
-        const result = await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
-        this.serverStarting = false;
-        if (!result.success) {
-          window.$message.error("Stop server failed, error: " + result.error, messageOptions);
-          log.info("Stop mod failed, error", result.error);
-        }
+        this.serverStatus = SERVER_STATUS.Stopped;
+
+        window.$message.error(
+          "Start server failed, error: " + result.error, messageOptions
+        );
+
+        log.info("Start mod failed", result.error);
+      }
+    },
+    async stopServer() {
+      log.info("Stopping mod");
+
+      this.imageAccessHealthCheckResult = HEALTH_CHECK.NotStarted;
+      this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
+
+      const result = await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
+      this.serverStatus = SERVER_STATUS.Stopped;
+
+      if (!result.success) {
+        window.$message.error("Stop server failed, error: " + result.error, messageOptions);
+        log.info("Stop mod failed, error", result.error);
       }
     },
     async checkNginxServer() {

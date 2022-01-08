@@ -2,7 +2,7 @@
   <n-card bordered title="Runtime Info" size="small">
     <n-space vertical size="small">
       <n-p>Image loaded {{ statics.numOfImageLoaded }}</n-p>
-      <n-p>Last loaded time {{ statics.lastLoadTime }}</n-p>
+      <n-p>Last loaded time {{ lastLoadTimeFormatted }}</n-p>
       <n-p>Last loaded url {{ statics.lastLoadingImageUrl }}</n-p>
       <n-p>Recent loaded image</n-p>
       <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
@@ -16,6 +16,7 @@
 <script>
 import { defineComponent } from "vue";
 import got from "got";
+import moment from "moment";
 
 
 let getStaticInfoInterval = null;
@@ -36,7 +37,7 @@ export default defineComponent({
   async mounted() {
     getStaticInfoInterval = setInterval(await this.getStaticInfo, 1000, 1000);
     imageRndInterval = setInterval(() => {
-      this.imageRnd = new Date();
+      this.imageRnd = moment().unix();
     }, 100, 100);
   },
   async unmounted() {
@@ -46,6 +47,9 @@ export default defineComponent({
   computed: {
     loadedImageUrl() {
       return "http://localhost:39871/last-image?rnd=" + this.imageRnd;
+    },
+    lastLoadTimeFormatted() {
+      return moment(this.statics.lastLoadTime).calendar();
     }
   },
   methods: {
