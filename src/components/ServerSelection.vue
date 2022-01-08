@@ -6,7 +6,7 @@
   >
     <n-space>
       <n-radio
-        v-for="server in googleServers"
+        v-for="server in servers"
         :key="server"
         :value="server"
       >
@@ -32,7 +32,7 @@ export default defineComponent({
   },
   data() {
     return {
-      googleServers: ["mt.google.com", "khm.google.com"],
+      servers: ["mt.google.com", "khm.google.com", "ArcGIS"],
       selectedServer: store.get("selectedServer", "mt.google.com")
     };
   },
