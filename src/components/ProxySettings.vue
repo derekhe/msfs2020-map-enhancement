@@ -95,7 +95,7 @@ export default defineComponent({
       if (this.serverStarted) {
         await got.post("http://localhost:39871/configs", {
           json: {
-            proxy: this.proxyAddress
+            proxyAddress: this.proxyAddress
           }
         });
       }

@@ -7,8 +7,6 @@
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
-                <FirstTime />
-                <Important v-if="serverStatus!==SERVER_STATUS.Started" />
                 <n-switch
                   @update:value="handleServerToggle"
                   :loading="serverStatus===SERVER_STATUS.Starting"
@@ -18,17 +16,19 @@
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
-                <ServerCheck v-if="serverStatus===SERVER_STATUS.Started"
+                <FirstTime />
+                <Important v-if="!serverStarted" />
+                <ServerCheck v-if="serverStarted"
                              v-bind:image-access-health-check-result="imageAccessHealthCheckResult"
                              v-bind:nginx-server-health-check-result="nginxServerHealthCheckResult" />
                 <RuntimeInfo v-if="healthCheckPassed" />
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
-              <ProxySettings />
+              <ProxySettings v-bind:server-started="serverStarted"/>
             </n-tab-pane>
             <n-tab-pane name="Map Server" tab="Map Server">
-              <ServerSelection />
+              <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />

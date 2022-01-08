@@ -19,6 +19,7 @@ let configs = {
 
 let log = require("electron-log");
 const moment = require("moment");
+const { MTGoogle, KHMGoogle, ArcGIS } = require("./map-providers");
 
 log.info("Starting mock server, arguments:", argv);
 
@@ -29,6 +30,8 @@ const statics = {
 };
 
 let lastLoadedImage = null;
+
+mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS()];
 
 const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
@@ -55,7 +58,7 @@ const quadKeyToTileXY = function (quadKey) {
 
 router.post("/configs", (ctx, next) => {
   configs = { ...configs, ...ctx.request.body };
-  log.info(`new settings ${configs}`);
+  log.info(`new settings ${JSON.stringify(configs)}`);
   ctx.response.status = 200;
 });
 
@@ -75,24 +78,16 @@ router.get("/health", (ctx, next) => {
   ctx.response.status = 200;
 });
 
-const urlMapping = (server, tileX, tileY, levelOfDetail) => {
-  switch (server) {
-    case "mt.google.com":
-      return `https://${server}/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
-    case "khm.google.com":
-      return `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
-    case "ArcGIS":
-      return `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${levelOfDetail}/${tileY}/${tileX}`;
-    default:
-      throw "server unset, no url mapping";
-  }
+const getMapProvider = (server) => {
+  return mapProviders.filter((it) => it.name === server)[0];
 };
 
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
-  const url = urlMapping(configs.selectedServer, tileX, tileY, levelOfDetail);
+  let mapProvider = getMapProvider(configs.selectedServer);
+  const url = mapProvider.map(tileX, tileY, levelOfDetail);
 
   let options = {
     timeout: {
@@ -114,6 +109,11 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   log.info("Downloading", url, configs.proxyAddress);
 
   const resp = await got(url, options).buffer();
+
+  if (await mapProvider.isInvalid(resp)) {
+    ctx.response.statusCode = 404;
+    return;
+  }
 
   ctx.response.set("Content-Type", "image/jpeg");
   ctx.response.set("Last-Modified", "Sat, 24 Oct 2020 06:48:56 GMT");
