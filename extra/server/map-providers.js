@@ -48,8 +48,21 @@ class ArcGIS {
   }
 }
 
+class Mapbox {
+  name = "api.mapbox.com";
+
+  map(tileX, tileY, levelOfDetail) {
+    return `https://api.mapbox.com/v4/mapbox.satellite/${levelOfDetail}/${tileX}/${tileY}.jpg?sku=cky8e1hd40jus15nzunvf7q4u&access_token=pk.eyJ1IjoiaDB3YXJkIiwiYSI6ImNreG5td3UxajFwNW4ybnBudWtvdmw4bjEifQ.mbmam48LS8GaSWYXUOrNUQ`;
+  }
+
+  async isInvalid(content) {
+    return false;
+  }
+}
+
 module.exports = {
   MTGoogle,
   KHMGoogle,
   ArcGIS,
+  Mapbox,
 };
