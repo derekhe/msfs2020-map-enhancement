@@ -32,7 +32,7 @@ export default defineComponent({
   },
   data() {
     return {
-      servers: ["mt.google.com", "khm.google.com", "ArcGIS"],
+      servers: ["mt.google.com", "khm.google.com", "ArcGIS", "Mapbox"],
       selectedServer: store.get("selectedServer", "mt.google.com")
     };
   },

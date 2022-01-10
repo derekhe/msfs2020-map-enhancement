@@ -19,7 +19,7 @@ let configs = {
 
 let log = require("electron-log");
 const moment = require("moment");
-const { MTGoogle, KHMGoogle, ArcGIS } = require("./map-providers");
+const { MTGoogle, KHMGoogle, ArcGIS, Mapbox } = require("./map-providers");
 
 log.info("Starting mock server, arguments:", argv);
 
@@ -31,7 +31,7 @@ const statics = {
 
 let lastLoadedImage = null;
 
-mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS()];
+mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS(), new Mapbox()];
 
 const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
