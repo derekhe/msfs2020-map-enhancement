@@ -33,6 +33,9 @@
             <n-tab-pane name="Map Server" tab="Map Server">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
+            <n-tab-pane name="Cache" tab="Cache">
+              <CacheSetting/>
+            </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
             </n-tab-pane>
@@ -64,6 +67,7 @@ import RuntimeInfo from "@/components/RuntimeInfo";
 import Debug from "@/components/Debug";
 import ServerSelection from "@/components/ServerSelection";
 import ServerCheck from "@/components/ServerCheck";
+import CacheSetting from "@/components/CacheSetting";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -78,7 +82,8 @@ export default defineComponent({
     Important,
     FirstTime,
     Footer,
-    UpdateNotification
+    UpdateNotification,
+    CacheSetting
   },
   data() {
     return {
@@ -126,12 +131,12 @@ export default defineComponent({
       this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
       this.serverStatus = SERVER_STATUS.Starting;
 
-      const proxyAddress = store.get("proxyAddress", "");
-      const selectedServer = store.get("selectedServer", "mt.google.com");
-
       const result = await window.ipcRenderer
         .invoke(EVENT_START_SERVER, {
-          proxyAddress, selectedServer
+          proxyAddress: store.get("proxyAddress", ""),
+          selectedServer: store.get("selectedServer", "mt.google.com"),
+          cacheLocation: store.get("cacheLocation"),
+          cacheEnabled: store.get("cacheEnabled")
         });
 
       log.info("Start mod result", result);

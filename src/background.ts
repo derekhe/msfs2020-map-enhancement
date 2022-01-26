@@ -102,9 +102,9 @@ if (isDevelopment) {
 }
 
 ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
-  const { proxyAddress, selectedServer } = arg;
+  const { proxyAddress, selectedServer, cacheLocation, cacheEnabled } = arg;
 
-  log.info("Staring server with", proxyAddress, selectedServer);
+  log.info("Staring server with", JSON.stringify(arg) );
 
   try {
     log.info("Trying to stop any nginx server");
@@ -116,7 +116,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   try {
     await addCertificate();
     patchHostsFile();
-    await startMapServer(proxyAddress, selectedServer);
+    await startMapServer(proxyAddress, selectedServer, cacheLocation, cacheEnabled);
     log.info("Start map server success");
     return { success: true };
   } catch (e) {
