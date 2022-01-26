@@ -76,6 +76,12 @@ router.get("/statics", (ctx, next) => {
   ctx.body = statics;
 });
 
+router.post("/clear-cache", async (ctx, next) => {
+  log.info("Clearing cache")
+  await keyv.clear();
+  log.info("Cache cleared")
+})
+
 router.get("/health", (ctx, next) => {
   log.info("Received health check");
   ctx.response.body = "alive";
