@@ -25,7 +25,7 @@ let log = require("electron-log");
 const moment = require("moment");
 const { MTGoogle, KHMGoogle, ArcGIS } = require("./map-providers");
 const Keyv = require("keyv");
-const keyv = new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\","/")}`);
+const keyv = new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\", "/")}`);
 
 const statics = {
   numOfImageLoaded: 0,
@@ -77,10 +77,10 @@ router.get("/statics", (ctx, next) => {
 });
 
 router.post("/clear-cache", async (ctx, next) => {
-  log.info("Clearing cache")
+  log.info("Clearing cache");
   await keyv.clear();
-  log.info("Cache cleared")
-})
+  log.info("Cache cleared");
+});
 
 router.get("/health", (ctx, next) => {
   log.info("Received health check");
@@ -91,6 +91,42 @@ router.get("/health", (ctx, next) => {
 const getMapProvider = (server) => {
   return mapProviders.filter((it) => it.name === server)[0];
 };
+
+async function mergeImage(tileX, tileY, levelOfDetail, cacheKey) {
+  const cacheKey1 = `${tileX * 2}-${tileY * 2}-${levelOfDetail + 1}`;
+  const cacheKey2 = `${tileX * 2 + 1}-${tileY * 2}-${levelOfDetail + 1}`;
+  const cacheKey3 = `${tileX * 2}-${tileY * 2 + 1}-${levelOfDetail + 1}`;
+  const cacheKey4 = `${tileX * 2 + 1}-${tileY * 2 + 1}-${levelOfDetail + 1}`;
+
+  const cache1 = await keyv.get(cacheKey1);
+  const cache2 = await keyv.get(cacheKey2);
+  const cache3 = await keyv.get(cacheKey3);
+  const cache4 = await keyv.get(cacheKey4);
+
+  if (cache1 && cache2 && cache3 && cache4) {
+    log.info("Merge tiles");
+    const merged = await sharp({
+      create: {
+        width: 512,
+        height: 512,
+        channels: 3,
+        background: { r: 255, g: 255, b: 255 },
+      },
+    })
+      .jpeg()
+      .composite([
+        { input: cache1, top: 0, left: 0 },
+        { input: cache2, top: 0, left: 256 },
+        { input: cache3, top: 256, left: 0 },
+        { input: cache4, top: 256, left: 256 },
+      ])
+      .toBuffer();
+
+    const content = await sharp(merged).resize(256).jpeg().toBuffer();
+    await keyv.set(cacheKey, content);
+    return content;
+  }
+}
 
 router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey.replace("kh", "");
@@ -119,10 +155,15 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
 
   const cacheKey = `${tileX}-${tileY}-${levelOfDetail}`;
 
-  let content = configs.cacheEnabled === "true" ? await keyv.get(cacheKey) : undefined;
+  let content;
+  if (configs.cacheEnabled === "true") {
+    content =
+      (await mergeImage(tileX, tileY, levelOfDetail, cacheKey)) ||
+      (await keyv.get(cacheKey));
+  }
 
   if (content) {
-    log.info("Load from cache", url);
+    log.info("Loaded from cache", url);
   } else {
     log.info("Downloading", url, configs.proxyAddress);
     content = await got(url, options).buffer();
@@ -148,7 +189,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   ctx.response.set("X-VE-TILEMETA-Product-IDs", "209");
   let image = await sharp(content)
     .modulate({
-      lightness: -5,
+      brightness: 0.95,
     })
     .toBuffer();
   ctx.body = image;
