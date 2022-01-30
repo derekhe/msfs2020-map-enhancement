@@ -58,6 +58,7 @@ router.post("/clear-cache", async (ctx, next) => {
   log.info("Clearing cache")
   await keyv.clear();
   log.info("Cache cleared")
+  ctx.response.status = 200;
 })
 
 router.get("/health", (ctx, next) => {
