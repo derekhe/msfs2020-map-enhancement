@@ -7,6 +7,7 @@
   <n-checkbox v-model:checked="cacheEnabled">Enable Cache</n-checkbox>
   <n-h4>Cache Location</n-h4>
   <n-p>The default cache location is under the installation path. You can put it to another location. When you change the cache location, the old cache file will still there. Please delete it manually.</n-p>
+  <n-p>Cache location should not contains any blank space otherwise image server will not start</n-p>
   <n-space vertical size="large">
     <n-input-group style="{width:'100%'}">
       <n-input v-model:value="cacheLocation"  style="{width:'60%'}" />
@@ -25,11 +26,19 @@ const store = new Store();
 import { defineComponent } from "vue";
 import got from "got";
 
+const getDirectory = (path) => {
+  return path.substring(0, path.lastIndexOf("\\") + 1);
+};
+
+const getDefaultPath = ()=>{
+  return "D:\\cache.sqlite";
+}
+
 export default defineComponent({
   name: "CacheSetting",
   data() {
     if (store.get("cacheLocation") === undefined) {
-      store.set("cacheLocation", electron.remote.app.getAppPath() + "\\cache.sqlite");
+      store.set("cacheLocation", getDefaultPath());
     }
 
     if (store.get("cacheEnabled") === undefined) {
@@ -43,7 +52,7 @@ export default defineComponent({
   },
   methods: {
     resetPath() {
-      this.cacheLocation = electron.remote.app.getAppPath() + "\\cache.sqlite";
+      this.cacheLocation = getDefaultPath();
     },
     async clearCache() {
       await got.post("http://localhost:39871/clear-cache");
