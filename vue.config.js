@@ -20,6 +20,7 @@ module.exports = {
           allowElevation: true,
           allowToChangeInstallationDirectory: true,
           perMachine: true,
+          deleteAppDataOnUninstall: true
         },
         publish: ["github"],
       },
