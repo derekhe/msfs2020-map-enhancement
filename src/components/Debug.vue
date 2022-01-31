@@ -6,7 +6,9 @@
   <n-button @click="resetToDefault">Reset to default</n-button>
   <n-h4>Logs</n-h4>
   <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in
-    <b>{{ logDirectory }}</b></n-p>
+    <n-li>{{ logDirectory }}</n-li>
+    <n-li>{{ appDirectory }}extra\nginx\logs</n-li>
+  </n-p>
 </template>
 
 <script>
@@ -25,7 +27,8 @@ export default defineComponent({
   name: "Debug",
   data() {
     return {
-      logDirectory: getDirectory(log.transports.file.getFile().path)
+      logDirectory: getDirectory(log.transports.file.getFile().path),
+      appDirectory: getDirectory(window.require("electron").remote.app.getAppPath())
     };
   },
   methods: {
