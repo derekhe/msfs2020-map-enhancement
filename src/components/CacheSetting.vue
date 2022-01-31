@@ -41,13 +41,13 @@ export default defineComponent({
       store.set("cacheLocation", getDefaultPath());
     }
 
-    if (store.get("cacheEnabled") === undefined) {
-      store.set("cacheEnabled", true);
+    if (store.get("enableCache") === undefined) {
+      store.set("enableCache", false);
     }
 
     return {
       cacheLocation: store.get("cacheLocation"),
-      cacheEnabled: store.get("cacheEnabled")
+      cacheEnabled: store.get("enableCache")
     };
   },
   methods: {
@@ -60,7 +60,7 @@ export default defineComponent({
   },
   watch: {
     cacheEnabled: function(val, oldVal) {
-      store.set("cacheEnabled", val);
+      store.set("enableCache", val);
     },
     cacheLocation: function(val, oldVal) {
       store.set("cacheLocation", val);
