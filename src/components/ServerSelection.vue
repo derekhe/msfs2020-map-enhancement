@@ -23,6 +23,10 @@
   <n-P>ArcGIS server does not need to use a proxy.</n-P>
   <n-h3>Bing Map (Latest)</n-h3>
   <n-p>MSFS's bing map is quite old in the game, select this will replace the bing map to latest bing map (same as https://www.bing.com/maps/aerial)</n-p>
+  <n-h3>Mapbox</n-h3>
+  <n-p>Mapbox provide better and newer images in some places, please sign up a free key in <n-a href="https://account.mapbox.com/access-tokens/">https://account.mapbox.com/access-tokens</n-a> and input it below</n-p>
+  <n-input v-model:value="mapboxAccessToken" type="text" placeholder="Mapbox Access Token" />
+  <n-p>Note: mapbox access token provides 200,000 tiles for free, please consider use the "Rolling Cache" in side game or enable the "Cache" inside this mod.</n-p>
 </template>
 
 <script>
@@ -37,13 +41,19 @@ const store = new Store();
 export default defineComponent({
   name: "ServerSelection",
   props: {
-    serverStarted: Boolean
+    serverStarted: Boolean,
   },
   data() {
     return {
-      servers: ["mt.google.com", "khm.google.com", "ArcGIS", "Bing Map (Latest)"],
-      selectedServer: store.get("selectedServer", "mt.google.com")
+      servers: ["mt.google.com", "khm.google.com", "ArcGIS", "Bing Map (Latest)","Mapbox"],
+      selectedServer: store.get("selectedServer", "mt.google.com"),
+      mapboxAccessToken: store.get("mapboxAccessToken", "")
     };
+  },
+  watch: {
+    mapboxAccessToken: function(val, oldVal){
+      store.set("mapboxAccessToken", val)
+    }
   },
   methods: {
     async updateConfig() {

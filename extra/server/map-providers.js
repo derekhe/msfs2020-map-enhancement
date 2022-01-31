@@ -44,8 +44,21 @@ class KHMGoogle extends TileBasedMapProvider {
   name = "khm.google.com";
 
   map(quadKey) {
-    const { tileX, tileY, levelOfDetail } = this.quadKeyToTileXY(quadKey);
     return `https://khm.google.com/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+  }
+}
+
+class MapBox extends TileBasedMapProvider {
+  name = "Mapbox"
+
+  constructor(accessToken) {
+    super();
+    this.accessToken = accessToken
+  }
+
+  map(quadKey) {
+    const { tileX, tileY, levelOfDetail } = this.quadKeyToTileXY(quadKey);
+    return `https://api.mapbox.com/v4/mapbox.satellite/${levelOfDetail}/${tileX}/${tileY}.jpg?sku=cky8e1hd40jus15nzunvf7q4u&access_token=${this.accessToken}`;
   }
 }
 
@@ -88,4 +101,5 @@ module.exports = {
   KHMGoogle,
   ArcGIS,
   BingMap,
+  MapBox
 };
