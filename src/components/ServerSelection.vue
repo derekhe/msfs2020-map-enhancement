@@ -68,7 +68,7 @@ export default defineComponent({
           }
         });
 
-        await got.post("http://localhost:39871/clear-cache");
+        //await got.post("http://localhost:39871/clear-cache");
       }
 
       log.info("Updated config");
