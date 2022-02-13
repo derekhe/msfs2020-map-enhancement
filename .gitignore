@@ -31,3 +31,4 @@ pnpm-debug.log*
 /extra/nginx/key.pem
 /extra/nginx/conf/cert.pem
 /extra/nginx/conf/key.pem
+/extra/server/python/
