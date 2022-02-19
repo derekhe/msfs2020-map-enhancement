@@ -57,7 +57,7 @@ class MapBox(TileBasedMapProvider):
 
     def map(self, quad_key):
         tile_x, tile_y, level_of_detail = self.quad_key_to_tileXY(quad_key)
-        return f"https://api.mapbox.com/v4/mapbox.satellite/{level_of_detail}/{tile_x}/{tile_y}.jpg?sku=cky8e1hd40jus15nzunvf7q4u&access_token={self.accessToken}"
+        return f"https://api.mapbox.com/v4/mapbox.satellite/{level_of_detail}/{tile_x}/{tile_y}.jpg?sku=cky8e1hd40jus15nzunvf7q4u&access_token={self.access_token}"
 
 
 class ArcGIS(TileBasedMapProvider):

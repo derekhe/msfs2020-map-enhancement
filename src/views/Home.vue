@@ -17,7 +17,7 @@
                     <template #checked>Back to Bing Map</template>
                     <template #unchecked>Inject Google Map</template>
                   </n-switch>
-                  <n-checkbox v-model:checked="autoStart">Auto Start</n-checkbox>
+                  <n-checkbox v-model:checked="autoInject">Auto Inject</n-checkbox>
                 </n-space>
                 <FirstTime />
                 <Important v-if="!serverStarted" />
@@ -94,15 +94,15 @@ export default defineComponent({
       HEALTH_CHECK: HEALTH_CHECK,
       SERVER_STATUS: SERVER_STATUS,
       appVersion: window.require("electron").remote.app.getVersion(),
-      autoStart: store.get("autoStart", false)
+      autoInject: store.get("autoInject", false)
     };
   },
   setup() {
     window.$message = useMessage();
   },
   watch: {
-    autoStart: function(val) {
-      store.set("autoStart", val);
+    autoInject: function(val) {
+      store.set("autoInject", val);
     }
   },
   computed: {
@@ -112,7 +112,7 @@ export default defineComponent({
   },
   async mounted() {
     setTimeout(await this.check443Port, 500);
-    if (this.autoStart) {
+    if (this.autoInject) {
       this.serverStarted = true;
       await this.handleServerToggle(true);
     }
@@ -148,8 +148,8 @@ export default defineComponent({
         this.firstTime = false;
         store.set("firstTime", this.firstTime);
 
-        setTimeout(await this.checkImageAccess, 10 * 1000);
-        setTimeout(await this.checkNginxServer, 10 * 1000);
+        setTimeout(await this.checkImageAccess, 8 * 1000);
+        setTimeout(await this.checkNginxServer, 8 * 1000);
       } else {
         this.serverStatus = SERVER_STATUS.Stopped;
 
@@ -207,7 +207,7 @@ export default defineComponent({
 
       let options = {
         timeout: {
-          request: 15 * 1000
+          request: 5 * 1000
         },
         rejectUnauthorized: false
       };
