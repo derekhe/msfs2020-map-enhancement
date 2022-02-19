@@ -1,6 +1,6 @@
 <template>
   <n-h4>FAQ</n-h4>
-  <n-p>Please read <a href="https://github.com/derekhe/msfs2020-google-map/wiki/FAQ" target="_blank">FAQ</a>
+  <n-p>Please read <a href="https://github.com/derekhe/msfs2020-map-enhancement/wiki/FAQ" target="_blank">FAQ</a>
     page first
   </n-p>
   <n-button @click="resetToDefault">Reset to default</n-button>
@@ -8,7 +8,9 @@
   <n-p>Please click "View" -> "Toggle Developer Tools" to view detailed log. More logs can be found in
     <n-li>{{ logDirectory }}</n-li>
     <n-li>{{ appDirectory }}extra\nginx\logs</n-li>
+    <n-li>{{ appDirectory }}extra\server\logs</n-li>
   </n-p>
+  <a href="https://github.com/derekhe/msfs2020-map-enhancement/issues/new?assignees=&labels=&template=bug_report.md&title=" target="_blank">Report issue</a>
 </template>
 
 <script>
