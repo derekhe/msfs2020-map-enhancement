@@ -18,6 +18,21 @@
                     <template #unchecked>Inject Google Map</template>
                   </n-switch>
                   <n-checkbox v-model:checked="autoInject">Auto Inject</n-checkbox>
+                  <n-checkbox v-model:checked="autoStartGame">Auto Start Game</n-checkbox>
+                  <n-radio-group
+                    v-model:value="distributor"
+                    name="radiogroup"
+                  >
+                    <n-space>
+                      <n-radio
+                        v-for="dist in distributors"
+                        :key="dist"
+                        :value="dist"
+                      >
+                        {{ dist }}
+                      </n-radio>
+                    </n-space>
+                  </n-radio-group>
                 </n-space>
                 <FirstTime />
                 <Important v-if="!serverStarted" />
@@ -33,9 +48,9 @@
             <n-tab-pane name="Map Server" tab="Map Server">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
-<!--            <n-tab-pane name="Cache" tab="Cache">-->
-<!--              <CacheSetting/>-->
-<!--            </n-tab-pane>-->
+            <!--            <n-tab-pane name="Cache" tab="Cache">-->
+            <!--              <CacheSetting/>-->
+            <!--            </n-tab-pane>-->
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
             </n-tab-pane>
@@ -49,7 +64,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { EVENT_CHECK_PORT, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import { EVENT_CHECK_PORT, EVENT_START_GAME, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
 
@@ -82,7 +97,7 @@ export default defineComponent({
     Important,
     FirstTime,
     Footer,
-    UpdateNotification,
+    UpdateNotification
     // CacheSetting
   },
   data() {
@@ -94,7 +109,10 @@ export default defineComponent({
       HEALTH_CHECK: HEALTH_CHECK,
       SERVER_STATUS: SERVER_STATUS,
       appVersion: window.require("electron").remote.app.getVersion(),
-      autoInject: store.get("autoInject", false)
+      autoInject: store.get("autoInject", false),
+      autoStartGame: store.get("autoStartGame", false),
+      distributors: ["MS Store", "Steam"],
+      distributor: store.get("distributor", "MS Store")
     };
   },
   setup() {
@@ -103,6 +121,12 @@ export default defineComponent({
   watch: {
     autoInject: function(val) {
       store.set("autoInject", val);
+    },
+    autoStartGame: function(val) {
+      store.set("autoStartGame", val);
+    },
+    distributor: function(val) {
+      store.set("distributor", val);
     }
   },
   computed: {
@@ -150,6 +174,7 @@ export default defineComponent({
 
         setTimeout(await this.checkImageAccess, 8 * 1000);
         setTimeout(await this.checkNginxServer, 8 * 1000);
+        setTimeout(await this.startGame);
       } else {
         this.serverStatus = SERVER_STATUS.Stopped;
 
@@ -232,6 +257,12 @@ export default defineComponent({
       if (result) {
         window.$message.error("443 Port is using, the mod won't work. Please close any application using 443 port. Look at the FAQ page here: https://github.com/derekhe/msfs2020-google-map/wiki/FAQ#443-port-is-occupied", messageOptions);
       }
+    },
+    async startGame() {
+      await window.ipcRenderer
+        .invoke(EVENT_START_GAME, {
+          distributor: this.distributor
+        });
     }
   }
 });
