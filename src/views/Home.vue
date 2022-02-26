@@ -48,9 +48,9 @@
             <n-tab-pane name="Map Server" tab="Map Server">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
-            <!--            <n-tab-pane name="Cache" tab="Cache">-->
-            <!--              <CacheSetting/>-->
-            <!--            </n-tab-pane>-->
+            <n-tab-pane name="Cache" tab="Cache">
+              <CacheSetting/>
+            </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
             </n-tab-pane>
@@ -97,8 +97,8 @@ export default defineComponent({
     Important,
     FirstTime,
     Footer,
-    UpdateNotification
-    // CacheSetting
+    UpdateNotification,
+    CacheSetting
   },
   data() {
     return {

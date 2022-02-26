@@ -18,6 +18,7 @@ from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
 from flask import Flask, make_response, Response, request, jsonify
 import argparse
 from dataclasses import dataclass
+from diskcache import Cache
 
 urllib3.disable_warnings()
 
@@ -25,6 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--proxyAddress', default=None, required=False)
 parser.add_argument('--selectedServer', default="mt.google.com")
 parser.add_argument('--cacheLocation', default="./cache", required=False)
+parser.add_argument('--cacheEnabled', default=False, required=False)
 parser.add_argument('--mapboxAccessToken', default="", required=False)
 argv = parser.parse_args()
 
@@ -47,11 +49,14 @@ class Config:
     proxyAddress: str
     selectedServer: str
     cacheLocation: str
+    cacheEnabled: bool
     mapboxAccessToken: str
 
 
 server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
-                        cacheLocation=argv.cacheLocation, mapboxAccessToken=argv.mapboxAccessToken)
+                        cacheLocation=argv.cacheLocation,
+                        cacheEnabled=argv.cacheEnabled,
+                        mapboxAccessToken=argv.mapboxAccessToken)
 
 
 @dataclass
@@ -70,9 +75,33 @@ map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_con
 last_image = None
 
 
+class DummyCache:
+    def clear(self):
+        pass
+
+    def get(self, key):
+        return None
+
+    def set(self, key, content):
+        pass
+
+
+if server_configs.cacheEnabled:
+    cache = Cache(
+        server_configs.cacheLocation, size_limit=int(10) * 1024 * 1024 * 1024, shards=10)
+else:
+    cache = DummyCache()
+
+
 @app.route("/health")
 def health() -> str:
     return "alive"
+
+
+@app.route("/cache", methods=["DELETE"])
+def clear_cache() -> Response:
+    cache.clear()
+    return Response(status=200)
 
 
 @app.route("/configs", methods=['POST'])
@@ -131,16 +160,22 @@ def tiles(path: str) -> Response:
     map_provider = list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
     url = map_provider.map(quadkey)
 
-    logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
-    resp = requests.get(
-        url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30)
+    content = cache.get(url)
 
-    logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
+    if content is None:
+        logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
+        resp = requests.get(
+            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30, verify=False)
 
-    if resp.status_code != 200:
-        return Response(status=404)
+        logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
-    content = resp.content
+        if resp.status_code != 200:
+            return Response(status=404)
+
+        content = resp.content
+        cache.set(url, content)
+    else:
+        print("Use cached:", url)
 
     try:
         im = Image.open(io.BytesIO(content))

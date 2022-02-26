@@ -36,6 +36,10 @@ export async function startMapServer(arg: any): Promise<void> {
     args.push("--mapboxAccessToken", mapboxAccessToken);
   }
 
+  if(cacheEnabled){
+    args.push("--cacheEnabled", cacheEnabled)
+  }
+
   log.info("Starting image server");
 
   imageServer = spawn("./python/python.exe", args, {
