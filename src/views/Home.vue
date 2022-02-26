@@ -49,7 +49,7 @@
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
             <n-tab-pane name="Cache" tab="Cache">
-              <CacheSetting/>
+              <CacheSetting />
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
@@ -259,10 +259,12 @@ export default defineComponent({
       }
     },
     async startGame() {
-      await window.ipcRenderer
-        .invoke(EVENT_START_GAME, {
-          distributor: this.distributor
-        });
+      if (store.get("autoStartGame", false)) {
+        await window.ipcRenderer
+          .invoke(EVENT_START_GAME, {
+            distributor: this.distributor
+          });
+      }
     }
   }
 });
