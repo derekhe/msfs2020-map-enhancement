@@ -16,6 +16,7 @@ export async function startMapServer(arg: any): Promise<void> {
     cacheLocation,
     cacheEnabled,
     mapboxAccessToken,
+    enableHighLOD,
   } = arg;
 
   let args = ["server.py"];
@@ -36,21 +37,25 @@ export async function startMapServer(arg: any): Promise<void> {
     args.push("--mapboxAccessToken", mapboxAccessToken);
   }
 
-  if(cacheEnabled){
-    args.push("--cacheEnabled", cacheEnabled)
+  if (cacheEnabled) {
+    args.push("--cacheEnabled", cacheEnabled);
+  }
+
+  if (enableHighLOD) {
+    args.push("--enableHighLOD", enableHighLOD);
   }
 
   log.info("Starting image server");
 
   imageServer = spawn("./python/python.exe", args, {
     cwd: path.join(__dirname, "../extra/server"),
-    stdio: 'ignore'
+    stdio: "ignore",
   });
 
   log.info("Starting nginx server");
   nginxProcess = spawn("./nginx.exe", [], {
     cwd: path.join(__dirname, "../extra/nginx"),
-    stdio: 'ignore'
+    stdio: "ignore",
   });
 
   nginxProcess.on("error", (err) => {

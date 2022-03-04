@@ -8,3 +8,4 @@ class Config:
     cacheLocation: str
     cacheEnabled: bool
     mapboxAccessToken: str
+    enableHighLOD: bool
