@@ -17,6 +17,9 @@
       <n-button @click="checkProxy" v-model:loading="proxyChecking">
         Test Proxy
       </n-button>
+      <n-button @click="clearProxy">
+        Clear Proxy
+      </n-button>
     </n-space>
     <n-alert title="Proxy" type="info" v-if="proxyTestResult === HEALTH_CHECK.Passed">
       Proxy check passed
@@ -98,11 +101,17 @@ export default defineComponent({
             proxyAddress: this.proxyAddress
           }
         });
+
+        window.$message.info("Proxy config updated");
       }
 
       log.info("Updated config");
+    },
+    async clearProxy() {
+      this.proxyAddress = "";
+      await this.updateConfig();
     }
-  }
+  },
 });
 
 

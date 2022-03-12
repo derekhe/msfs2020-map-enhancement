@@ -56,7 +56,8 @@ export default defineComponent({
     },
     async clearCache() {
       try {
-        await got.post("http://localhost:39871/clear-cache");
+        await got.delete("http://localhost:39871/cache");
+        window.$message.info("Cache cleared");
       }
       catch(e){
         window.$message.error("Please start injection and then clear cache");
