@@ -164,6 +164,7 @@ export default defineComponent({
           selectedServer: store.get("selectedServer", "mt.google.com"),
           cacheLocation: store.get("cacheLocation"),
           cacheEnabled: store.get("enableCache", false),
+          cacheSizeGB: store.get("cacheSizeGB", 10),
           mapboxAccessToken: store.get("mapboxAccessToken"),
           enableHighLOD: store.get("enableHighLOD", false)
         });

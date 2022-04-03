@@ -15,6 +15,7 @@ export async function startMapServer(arg: any): Promise<void> {
     selectedServer,
     cacheLocation,
     cacheEnabled,
+    cacheSizeGB,
     mapboxAccessToken,
     enableHighLOD,
   } = arg;
@@ -39,6 +40,10 @@ export async function startMapServer(arg: any): Promise<void> {
 
   if (cacheEnabled) {
     args.push("--cacheEnabled", cacheEnabled);
+  }
+
+  if(cacheSizeGB){
+    args.push("--cacheSizeGB", cacheSizeGB);
   }
 
   if (enableHighLOD) {
