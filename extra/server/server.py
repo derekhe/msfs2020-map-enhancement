@@ -122,8 +122,54 @@ def mtx(dummy: str = None) -> Response:
     return response
 
 
+@app.route("/tiles/<tile_x>/<tile_y>/<level_of_detail>")
+def tiles(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
+    url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'
+    content = requests.get(
+        url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+        verify=False).content
+
+    response = make_response(content)
+    headers = {"Content-Type": "image/jpeg", "Last-Modified": "Sat, 24 Oct 2020 06:48:56 GMT", "ETag": "9580",
+               "Server": "Microsoft-IIS/10.0", "X-VE-TFE": "BN00004E85", "X-VE-AZTBE": "BN000033DA", "X-VE-AC": "5035",
+               "X-VE-ID": "4862_136744347",
+               "X-VE-TILEMETA-CaptureDatesRang": "1/1/1999-12/31/2003",
+               "X-VE-TILEMETA-CaptureDateMaxYY": "0312",
+               "X-VE-TILEMETA-Product-IDs": "209"}
+    for k, v in headers.items():
+        response.headers[k] = v
+
+    return response
+
+@app.route("/cache/<tile_x>/<tile_y>/<level_of_detail>")
+def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
+    url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'
+    content = cache.get(url)
+
+    if content is None:
+        return Response(status=404)
+
+    im = Image.new('RGB', (256, 256))
+    im.paste((0,0,255), [0, 0, 256,256])
+
+    img_byte_arr = io.BytesIO()
+    im.save(img_byte_arr, format='jpeg')
+    output = img_byte_arr.getvalue()
+
+    response = make_response(output)
+    headers = {"Content-Type": "image/jpeg", "Last-Modified": "Sat, 24 Oct 2020 06:48:56 GMT", "ETag": "9580",
+               "Server": "Microsoft-IIS/10.0", "X-VE-TFE": "BN00004E85", "X-VE-AZTBE": "BN000033DA", "X-VE-AC": "5035",
+               "X-VE-ID": "4862_136744347",
+               "X-VE-TILEMETA-CaptureDatesRang": "1/1/1999-12/31/2003",
+               "X-VE-TILEMETA-CaptureDateMaxYY": "0312",
+               "X-VE-TILEMETA-Product-IDs": "209"}
+    for k, v in headers.items():
+        response.headers[k] = v
+
+    return response
+
 @app.route("/tiles/a<path>")
-def tiles(path: str) -> Response:
+def quad_tiles(path: str) -> Response:
     quadkey = re.findall(r"(\d+).jpeg", path)[0]
     map_provider = list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
 

@@ -17,6 +17,7 @@
   },
   "main": "background.js",
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.11.4",
     "@vicons/ionicons5": "^0.11.0",
     "core-js": "^3.6.5",
     "dns": "^0.2.2",
@@ -30,6 +31,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^10.1.1",
+    "leaflet": "^1.7.1",
     "minimist": "^1.2.6",
     "moment": "^2.29.1",
     "sharp": "^0.29.3",
