@@ -37,7 +37,7 @@ async function createWindow() {
   const store = new Store();
 
   const win = new BrowserWindow({
-    width: 800,
+    width: 920,
     height: 800,
     fullscreenable: false,
     fullscreen: false,
