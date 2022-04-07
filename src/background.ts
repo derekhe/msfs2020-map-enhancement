@@ -9,6 +9,7 @@ import {
   EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER,
+  EVENT_RELOAD_TRAY,
 } from "@/consts/custom-events";
 
 import { addCertificate } from "@/services/certificate";
@@ -157,4 +158,7 @@ ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
 
 ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
   await startGame(arg["distributor"]);
+});
+
+ipcMain.handle(EVENT_RELOAD_TRAY, async () => {
 });
