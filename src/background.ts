@@ -23,8 +23,10 @@ import path from "path";
 // @ts-ignore
 import Store from "electron-store";
 import { startGame } from "@/services/game";
+import Tray from "@/services/tray";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+let tray: Tray;
 
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -32,6 +34,7 @@ protocol.registerSchemesAsPrivileged([
 
 async function createWindow() {
   Store.initRenderer();
+  const store = new Store();
 
   const win = new BrowserWindow({
     width: 800,
@@ -47,6 +50,13 @@ async function createWindow() {
       enableRemoteModule: true,
     },
   });
+
+  if (store.get("startMinimized", false)) {
+    win.hide();
+  }
+
+  tray = new Tray(win, app, store);
+  tray.maybeShow();
 
   win.webContents.on("new-window", function (e, url) {
     e.preventDefault();
@@ -161,4 +171,5 @@ ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
 });
 
 ipcMain.handle(EVENT_RELOAD_TRAY, async () => {
+  tray.reloadConfig();
 });
