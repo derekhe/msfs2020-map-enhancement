@@ -24,6 +24,13 @@ export default class {
 
     this.trayMenu = this.createTrayMenu();
 
+    this.app.on("before-quit", () => {
+      if (this.tray) {
+        this.tray.destroy();
+        this.tray = null;
+      }
+    });
+
     this.maybeHookTray();
   }
 
