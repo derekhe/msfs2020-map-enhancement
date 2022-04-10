@@ -9,7 +9,7 @@ export default class {
   win: BrowserWindow;
   app: App;
   store: Store;
-  tray: Tray;
+  tray: Tray | null;
   trayIcon: nativeImage;
   trayMenu: Menu;
   isQuitting = false;
@@ -18,6 +18,7 @@ export default class {
     this.win = win;
     this.app = app;
     this.store = store;
+    this.tray = null;
 
     this.trayIcon = nativeImage.createFromPath(path.join(__dirname, "../public/icon.png"));
 
@@ -46,6 +47,7 @@ export default class {
   maybeShow(): void {
     if(this.tray) {
       this.tray.destroy();
+      this.tray = null;
     }
     if (this.store.get("useTrayIcon", false)) {
       this.tray = new Tray(this.trayIcon);
