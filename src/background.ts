@@ -9,6 +9,7 @@ import {
   EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER,
+  EVENT_RELOAD_TRAY,
 } from "@/consts/custom-events";
 
 import { addCertificate } from "@/services/certificate";
@@ -22,8 +23,10 @@ import path from "path";
 // @ts-ignore
 import Store from "electron-store";
 import { startGame } from "@/services/game";
+import Tray from "@/services/tray";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+let tray: Tray;
 
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -31,9 +34,10 @@ protocol.registerSchemesAsPrivileged([
 
 async function createWindow() {
   Store.initRenderer();
+  const store = new Store();
 
   const win = new BrowserWindow({
-    width: 800,
+    width: 920,
     height: 800,
     fullscreenable: false,
     fullscreen: false,
@@ -46,6 +50,13 @@ async function createWindow() {
       enableRemoteModule: true,
     },
   });
+
+  if (store.get("startMinimized", false)) {
+    win.hide();
+  }
+
+  tray = new Tray(win, app, store);
+  tray.maybeShow();
 
   win.webContents.on("new-window", function (e, url) {
     e.preventDefault();
@@ -157,4 +168,8 @@ ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
 
 ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
   await startGame(arg["distributor"]);
+});
+
+ipcMain.handle(EVENT_RELOAD_TRAY, async () => {
+  tray.reloadConfig();
 });

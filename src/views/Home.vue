@@ -48,6 +48,9 @@
             <n-tab-pane name="Map Options" tab="Map Options">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
+            <n-tab-pane name="System Tray" tab="System Tray">
+              <SystemTray />
+            </n-tab-pane>
             <n-tab-pane name="Cache" tab="Cache">
               <CacheSetting />
             </n-tab-pane>
@@ -90,6 +93,7 @@ import ServerSelection from "@/components/ServerSelection";
 import ServerCheck from "@/components/ServerCheck";
 import CacheSetting from "@/components/CacheSetting";
 import OfflineDownload from "@/components/OfflineDownload";
+import SystemTray from "@/components/SystemTray";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -106,7 +110,8 @@ export default defineComponent({
     FirstTime,
     Footer,
     UpdateNotification,
-    CacheSetting
+    CacheSetting,
+    SystemTray,
   },
   data() {
     return {
