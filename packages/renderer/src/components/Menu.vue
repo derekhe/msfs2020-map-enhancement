@@ -1,29 +1,30 @@
 <template>
   <div class="flex-initial w-48 bg-neutral-focus p-4">
     <ul class="menu bg-neutral-focus">
-      <li><a @click="menuClicked(selectedMenu.HOME)">Start</a></li>
-      <li><a @click="menuClicked(selectedMenu.OPTION)">Options</a></li>
-      <li><a @click="menuClicked(selectedMenu.ABOUT)">About</a></li>
+      <li><a @click="menuClicked(Menus.HOME)">Start</a></li>
+      <li><a @click="menuClicked(Menus.OPTION)">Options</a></li>
+      <li><a @click="menuClicked(Menus.ABOUT)">About</a></li>
     </ul>
   </div>
 </template>
 
 <script>
-import {selectedMenu, uiState} from "../uiState";
+import { MenuItems } from "../const";
 
 export default {
   name: "Menu",
+  emits: ["menuClicked"],
   data() {
     return {
-      store: uiState, selectedMenu
-    }
+      Menus: MenuItems
+    };
   },
   methods: {
     menuClicked(selectedMenu) {
-      uiState.selectedMenu = selectedMenu;
+      this.$emit("menuClicked", selectedMenu);
     }
   }
-}
+};
 </script>
 
 <style scoped>

@@ -1,7 +1,11 @@
-import { domReady } from './utils'
-import { useLoading } from './loading'
+import { domReady } from "./utils";
+import { useLoading } from "./loading";
+import { ipcRenderer } from "electron";
 
-const { appendLoading, removeLoading } = useLoading()
-window.removeLoading = removeLoading
+const { appendLoading, removeLoading } = useLoading();
 
-domReady().then(appendLoading)
+window.removeLoading = removeLoading;
+domReady().then(appendLoading);
+
+// @ts-ignore
+window.ipcRenderer = ipcRenderer;
