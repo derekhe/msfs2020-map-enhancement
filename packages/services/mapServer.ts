@@ -17,7 +17,7 @@ export async function startMapServer(arg: any): Promise<void> {
     cacheEnabled,
     cacheSizeGB,
     mapboxAccessToken,
-    enableHighLOD,
+    enableHighLOD
   } = arg;
 
   let args = ["server.py"];
@@ -42,7 +42,7 @@ export async function startMapServer(arg: any): Promise<void> {
     args.push("--cacheEnabled", cacheEnabled);
   }
 
-  if(cacheSizeGB){
+  if (cacheSizeGB) {
     args.push("--cacheSizeGB", cacheSizeGB);
   }
 
@@ -54,40 +54,24 @@ export async function startMapServer(arg: any): Promise<void> {
 
   imageServer = spawn("./python/python.exe", args, {
     cwd: path.join(__dirname, "../../extra/server"),
-    stdio: "ignore",
+    stdio: "ignore"
   });
 
   log.info("Starting nginx server");
   nginxProcess = spawn("./nginx.exe", [], {
     cwd: path.join(__dirname, "../../extra/nginx"),
-    stdio: "ignore",
+    stdio: "ignore"
+  });
+
+  nginxProcess.on("close", function(code) {
+    log.log(`Process closed`, code);
   });
 
   nginxProcess.on("error", (err) => {
-    log.error("Failed to start nginx", err);
+    log.error(`Failed to start process`, err);
   });
 
   log.info("Started nginx server");
-}
-
-function setupLog(process: ChildProcess, name: string) {
-  process.stdout!.setEncoding("utf8");
-  process.stdout!.on("data", function (data) {
-    log.info(`${name}:`, data);
-  });
-
-  process.stderr!.setEncoding("utf8");
-  process.stderr!.on("error", function (data) {
-    log.info(`${name}:`, data);
-  });
-
-  process.on("close", function (code) {
-    log.log(`${name} Process closed`, code);
-  });
-
-  process.on("error", (err) => {
-    log.error(`${name} Failed to start process`, err);
-  });
 }
 
 export async function stopServer(): Promise<void> {
@@ -95,7 +79,7 @@ export async function stopServer(): Promise<void> {
 
   try {
     await execAsync("taskkill", ["/F", "/IM", "python.exe"], {
-      shell: true,
+      shell: true
     });
   } catch (e) {
     log.info(e);
@@ -103,7 +87,7 @@ export async function stopServer(): Promise<void> {
 
   try {
     await execAsync("taskkill", ["/F", "/IM", "nginx.exe"], {
-      shell: true,
+      shell: true
     });
   } catch (e) {
     log.info(e);

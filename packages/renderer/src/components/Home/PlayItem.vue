@@ -24,14 +24,12 @@
 
 <script>
 
-import log, { info } from "electron-log";
-import { EVENT_START_SERVER } from "../../../../consts/custom-events";
 import { globalOptions } from "../../globalOptions";
-import { toRefs } from "vue";
 
 export default {
   name: "PlayItem",
   props: ["title", "description", "currentId", "nextId", "prevId", "image"],
+  emits: ["startServer"],
   data() {
     return {
       globalOptions
@@ -39,10 +37,7 @@ export default {
   },
   methods: {
     async startServer() {
-      log.info("Starting mod");
-      const result = await window.ipcRenderer
-        .invoke(EVENT_START_SERVER, JSON.parse(JSON.stringify(globalOptions)));
-      info("Start mod result", result);
+      this.$emit("startServer", this.title)
     }
   }
 };
