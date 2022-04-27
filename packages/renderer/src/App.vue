@@ -29,7 +29,7 @@ import Options from "./components/Options/Options.vue";
 import About from "./components/Home/About.vue";
 import ServerStatus from "./components/common/ServerStatus.vue";
 import { MenuItems } from "./const";
-import { EVENT_START_HOSTS_PATH, EVENT_START_SERVER } from "../../consts/custom-events";
+import { EVENT_CHECK_PORT, EVENT_START_HOSTS_PATH, EVENT_START_SERVER } from "../../consts/custom-events";
 import { globalOptions } from "./globalOptions";
 import log from "electron-log";
 import Alert from "./components/common/Alert.vue";
@@ -46,7 +46,7 @@ export default {
       errorMessage: "",
       imageAccessHealthCheckResult: HEALTH_CHECK.NotStarted,
       nginxServerHealthCheckResult: HEALTH_CHECK.NotStarted,
-      HEALTH_CHECK,
+      HEALTH_CHECK
     };
   },
   methods: {
@@ -121,7 +121,7 @@ export default {
         this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
         log.error("Image server error", ex);
       }
-    }
+    },
   },
   async mounted() {
     log.info("Starting mod");
