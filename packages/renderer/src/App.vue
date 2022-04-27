@@ -46,7 +46,7 @@ export default {
       errorMessage: "",
       imageAccessHealthCheckResult: HEALTH_CHECK.NotStarted,
       nginxServerHealthCheckResult: HEALTH_CHECK.NotStarted,
-      HEALTH_CHECK
+      HEALTH_CHECK,
     };
   },
   methods: {
