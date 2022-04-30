@@ -7,50 +7,11 @@ const execAsync = util.promisify(execFile);
 let imageServer: ChildProcess;
 let nginxProcess: ChildProcess;
 
-export async function startMapServer(arg: any): Promise<void> {
+export async function startMapServer(options: any): Promise<void> {
   log.info("Starting map server");
 
-  const {
-    proxyAddress,
-    selectedServer,
-    cacheLocation,
-    cacheEnabled,
-    cacheSizeGB,
-    mapboxAccessToken,
-    enableHighLOD
-  } = arg;
-
   let args = ["server.py"];
-
-  if (proxyAddress) {
-    args.push("--proxyAddress", proxyAddress);
-  }
-
-  if (selectedServer) {
-    args.push("--selectedServer", selectedServer);
-  }
-
-  if (cacheLocation) {
-    args.push("--cacheLocation", cacheLocation);
-  }
-
-  if (mapboxAccessToken) {
-    args.push("--mapboxAccessToken", mapboxAccessToken);
-  }
-
-  if (cacheEnabled) {
-    args.push("--cacheEnabled", cacheEnabled);
-  }
-
-  if (cacheSizeGB) {
-    args.push("--cacheSizeGB", cacheSizeGB);
-  }
-
-  if (enableHighLOD) {
-    args.push("--enableHighLOD", enableHighLOD);
-  }
-
-  log.info("Starting image server");
+  args.push("--config", options);
 
   imageServer = spawn("./python/python.exe", args, {
     cwd: path.join(__dirname, "../../extra/server"),

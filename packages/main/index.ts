@@ -130,7 +130,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   try {
     await addCertificate();
     await patchHostsFile();
-    await startMapServer(arg);
+    await startMapServer(JSON.stringify(arg));
     log.info("Start map server success");
     return { success: true };
   } catch (e) {
