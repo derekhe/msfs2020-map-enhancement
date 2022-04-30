@@ -19,8 +19,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Log** 
 Please provide the logs:
-- Find out "Trouble Shooting" tab and attach the log files
-- Attach logs from: (INSTALLATION PATH)\resources\extra\nginx\logs
+- Find out "Trouble Shooting" tab and attach all the log files
 
 **Additional context**
 Add any other context about the problem here.
