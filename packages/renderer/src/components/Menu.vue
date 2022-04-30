@@ -1,6 +1,6 @@
 <template>
-  <div class="flex-initial w-48 bg-neutral-focus p-4">
-    <ul class="menu bg-neutral-focus">
+  <div class="flex-initial w-40 bg-neutral-focus p-4">
+    <ul class="menu bg-neutral-focus w-full">
       <li><a @click="menuClicked(Menus.HOME)">Start</a></li>
       <li><a @click="menuClicked(Menus.OPTION)">Options</a></li>
       <li><a @click="menuClicked(Menus.ABOUT)">About</a></li>

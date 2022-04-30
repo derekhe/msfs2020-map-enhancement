@@ -1,12 +1,12 @@
 import { app, BrowserWindow, shell, protocol, ipcMain } from "electron";
 import { release } from "os";
-import { join } from "path";
+import { join, resolve } from "path";
 import Store from "electron-store";
 import log from "electron-log";
 import {
   EVENT_CHECK_PORT,
   EVENT_CHECK_UPDATE,
-  EVENT_START_GAME, EVENT_START_HOSTS_PATH,
+  EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER
 } from "../consts/custom-events";
@@ -56,7 +56,9 @@ async function createWindow() {
       symbolColor: "#74b1be"
     },
     width: 1024,
-    height: 900
+    height: 900,
+    minWidth: 1024,
+    minHeight: 900
   });
 
   enable(win.webContents);
@@ -68,7 +70,8 @@ async function createWindow() {
     const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_DEV_SERVER_PORT"]}`;
 
     win.loadURL(url);
-    //win.webContents.openDevTools()
+    win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.1.4_0"));
+    win.webContents.openDevTools();
   }
 
   // Test active push message to Renderer-process
@@ -126,24 +129,12 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
 
   try {
     await addCertificate();
+    await patchHostsFile();
     await startMapServer(arg);
     log.info("Start map server success");
     return { success: true };
   } catch (e) {
     log.error("Start map server failed", e);
-    return { success: false, error: e };
-  }
-});
-
-ipcMain.handle(EVENT_START_HOSTS_PATH, async (event, arg) => {
-  log.info("Start hosts path");
-
-  try {
-    await patchHostsFile();
-    log.info("Hosts patched");
-    return { success: true };
-  } catch (e) {
-    log.error("Hosts patch failed");
     return { success: false, error: e };
   }
 });

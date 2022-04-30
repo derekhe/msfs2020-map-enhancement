@@ -15,7 +15,7 @@
         <div class="form-control">
           <label class="label cursor-pointer">
             <span class="label-text">Cache Enabled</span>
-            <input type="checkbox" checked="checked" class="checkbox">
+            <input type="checkbox" v-model="optionStore.cacheEnabled" class="checkbox">
           </label>
         </div>
 
@@ -23,20 +23,49 @@
           <label class="label">
             <span class="label-text">Cache storage path</span>
           </label>
-          <input type="text" placeholder="Cache path" class="input input-bordered w-full">
+          <input type="text" placeholder="Cache path" class="input input-bordered w-full"
+                 v-model="optionStore.cacheLocation">
         </div>
 
-        <h3>Cache size</h3>
-        <input type="range" min="0" max="100" value="40" class="range">
+        <h3>Cache size {{ optionStore.cacheSizeGB }}GB</h3>
+        <input type="range" min="10" max="100" class="range" v-model="optionStore.cacheSizeGB">
+        <button class="btn" @click="clear">Clear cache</button>
+        <p>{{ clearStatus }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+
+import { useOptionStore } from "../../stores/optionStore";
+import got from "got";
+
 export default {
-  name: "CacheOptions"
-}
+  name: "CacheOptions",
+  data() {
+    return {
+      clearStatus: ""
+    };
+  },
+  setup() {
+    let optionStore = useOptionStore();
+    return {
+      optionStore
+    };
+  },
+  methods: {
+    async clear() {
+      this.clearStatus = "Clearing, please wait";
+      try {
+        await got.delete("http://localhost:39871/cache");
+        this.clearStatus = "Cache cleared";
+      } catch (e) {
+        this.clearStatus = "Clear cache error, please retry or restart mod";
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>
