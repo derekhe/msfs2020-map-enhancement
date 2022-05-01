@@ -3,10 +3,6 @@ export const enum MenuItems {
 }
 
 export const MapProviders = {
-  "Bing Map (Latest)": {
-    key: "Bing Map (Latest)",
-    description: "MSFS's bing map is quite old in the game, select this will replace the bing map to latest bing map (same as https://www.bing.com/maps/aerial)"
-  },
   "mt.google.com": {
     key: "mt.google.com",
     description: "They provide the best resolution when flying low and seems very update to date. Both Google server's images are the same, choose the fastest from mt and khm server.\n" +
@@ -18,6 +14,10 @@ export const MapProviders = {
     description: "They provide the best resolution when flying low and seems very update to date. Both Google server's images are the same, choose the fastest from mt and khm server.\n" +
       "\n" +
       "In some places, google servers are blocked, you should setup a proxy."
+  },
+  "Bing Map (Latest)": {
+    key: "Bing Map (Latest)",
+    description: "MSFS's bing map is quite old in the game, select this will replace the bing map to latest bing map (same as https://www.bing.com/maps/aerial)"
   },
   "ArcGIS": {
     key: "ArcGIS",
