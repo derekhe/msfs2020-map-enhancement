@@ -5,7 +5,8 @@
       <p>If you need proxy to access google, please fill the proxy address. Format http://ipaddress:port</p>
       <p>Leave blank if you don't need proxy to access google</p>
       <div class="flex space-x-4 pt-4">
-        <input type="text" placeholder="http://ipaddress:port" class="input input-bordered w-64" v-model="optionStore.proxyAddress">
+        <input type="text" placeholder="http://ipaddress:port" class="input input-bordered w-64"
+               v-model="optionStore.proxyAddress">
         <button class="btn" @click="checkProxy">Test</button>
         <button class="btn" @click="clear">Clear</button>
       </div>
@@ -71,12 +72,7 @@ export default {
       }
     },
     async updateConfig() {
-      await got.post("http://localhost:39871/configs", {
-        json: {
-          proxyAddress: this.optionStore.proxyAddress
-        }
-      });
-
+      this.optionStore.updateServerConfig();
       log.info("Updated config");
     }
   }

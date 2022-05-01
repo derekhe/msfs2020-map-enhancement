@@ -1,5 +1,4 @@
 import concurrent
-import concurrent
 import os
 import sys
 from threading import Thread
@@ -10,7 +9,6 @@ from shapely.geometry import Polygon
 
 sys.path.append(os.path.curdir)
 
-from config import Config
 from dummy_cache import DummyCache
 from statics import Statics
 
@@ -45,15 +43,18 @@ argv = parser.parse_args()
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
+
 def config_server(server_configs):
     global map_providers, cache
     map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs['mapboxAccessToken'])]
 
     if server_configs['cacheEnabled']:
         cache = FanoutCache(
-            server_configs['cacheLocation'], size_limit=int(server_configs['cacheSizeGB']) * 1024 * 1024 * 1024, shards=20)
+            server_configs['cacheLocation'], size_limit=int(server_configs['cacheSizeGB']) * 1024 * 1024 * 1024,
+            shards=20)
     else:
         cache = DummyCache()
+
 
 @app.route("/health")
 def health() -> str:
@@ -294,6 +295,8 @@ def offline_download_worker(regions):
                         if polygon.contains(pmin) or polygon.contains(pmax):
                             exec.submit(download_from_url,
                                         get_selected_map_provider().tile_url(tile_x, tile_y, zoom_level))
+
+
 logger.info("Started with config %s", argv)
 if argv.config is not None:
     server_configs = json.loads(argv.config)

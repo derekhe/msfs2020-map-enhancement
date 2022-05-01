@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import Store from "electron-store";
+import got from "got";
+import log from "electron-log";
 
 const defaultConfig = {
   autoStartGame: false,
@@ -15,7 +17,8 @@ const defaultConfig = {
 
 const store = new Store();
 
-export const useOptionStore = defineStore("options", {
+export const useOptionStore = defineStore({
+  id: "options",
   state: () => {
     // @ts-ignore
     return store.get("config", defaultConfig) as object;
@@ -23,6 +26,13 @@ export const useOptionStore = defineStore("options", {
   actions: {
     reset() {
       store.clear();
+    },
+    async updateServerConfig() {
+      log.info("Update server config");
+      const body = JSON.parse(JSON.stringify(this.$state));
+      await got.post("http://localhost:39871/configs", {
+        json: body
+      });
     }
   }
 });
