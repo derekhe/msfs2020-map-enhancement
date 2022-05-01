@@ -28,11 +28,12 @@ import Start from "./components/Start/Start.vue";
 import Options from "./components/Options/Options.vue";
 import About from "./components/About/About.vue";
 import ServerStatus from "./components/common/ServerStatus.vue";
-import { MenuItems } from "./const";
+import { FAQ_PAGE_URL, MenuItems } from "./const";
 import Alert from "./components/common/Alert.vue";
 import { useOptionStore } from "./stores/optionStore";
 import Store from "electron-store";
 import { useStatusStore } from "./stores/statusStore";
+import { EVENT_CHECK_PORT } from "../../consts/custom-events";
 
 export default {
   components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus },
@@ -52,20 +53,29 @@ export default {
   methods: {
     selectMenu(selectedMenu) {
       this.activeMenu = selectedMenu;
+    },
+    async check443Port() {
+      const result = await window.ipcRenderer.invoke(EVENT_CHECK_PORT);
+      if (result) {
+        window.open(FAQ_PAGE_URL, "_blank");
+        this.$eventBus.emit("show-alert", "443 Port is using, the mod won't work. Please read FAQ to solve the problem and close any application using 443 port");
+      }
     }
   },
   async mounted() {
     const store = new Store();
     this.optionStore.$subscribe((mutation, state) => {
-      console.log("Save state");
+      console.log("Save state", state);
       store.set("config", state);
     });
 
-    this.$eventBus.on("show-alert", (e) => {
-      console.log("received alert", e);
-      this.errorMessage = e.message;
+    this.$eventBus.on("show-alert", (msg) => {
+      console.log("received alert", msg);
+      this.errorMessage = msg;
       this.alertEnabled = true;
     });
+
+    this.check443Port()
   }
 };
 </script>
