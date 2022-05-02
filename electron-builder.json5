@@ -7,7 +7,7 @@
     "dist"
   ],
   "directories": {
-    "output": "release/${version}"
+    "output": "release/"
   },
   extraResources: [
     "./extra/**",
@@ -18,14 +18,15 @@
   appId: "com.april1985.msfs2020-map-enhancement",
   win: {
     requestedExecutionLevel: "requireAdministrator",
-    "target": [
+    target: [
       {
-        "target": "nsis",
+        target: "nsis",
         "arch": [
           "x64"
         ]
       }
-    ]
+    ],
+    icon: "./public/icon.png"
   },
   nsis: {
     guid: "6fd47695-9ae0-492c-a3a2-db9be0a547d4",
