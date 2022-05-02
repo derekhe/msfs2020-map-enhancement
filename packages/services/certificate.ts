@@ -1,3 +1,4 @@
+import { app } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 // @ts-ignore
@@ -7,7 +8,7 @@ import util from "util";
 const execAsync = util.promisify(execFile);
 
 export const addCertificate = async (): Promise<void> => {
-  log.info("Adding certificate")
+  log.info("Adding certificate");
   const { stdout } = await execAsync(
     "mkcert.exe",
     [
@@ -19,11 +20,11 @@ export const addCertificate = async (): Promise<void> => {
       "kh.ssl.ak.tiles.virtualearth.net",
       "khstorelive.azureedge.net",
       "*.virtualearth.net",
-      "*.azureedge.net",
+      "*.azureedge.net"
     ],
     {
-      cwd: path.join(__dirname, "../../extra/nginx/conf"),
-      shell: true,
+      cwd: app.isPackaged ? path.join(__dirname, "../../../extra/nginx/conf") : path.join(__dirname, "../../extra/nginx/conf"),
+      shell: true
     }
   );
   log.info("Added certificate", stdout);

@@ -1,7 +1,8 @@
-import { fork, execFile, spawn, ChildProcess } from "child_process";
+import { ChildProcess, execFile, spawn } from "child_process";
 import path from "path";
 import log from "electron-log";
 import util from "util";
+import { app } from "electron";
 
 const execAsync = util.promisify(execFile);
 let imageServer: ChildProcess;
@@ -14,13 +15,13 @@ export async function startMapServer(options: any): Promise<void> {
   args.push("--config", options);
 
   imageServer = spawn("./python/python.exe", args, {
-    cwd: path.join(__dirname, "../../extra/server"),
+    cwd: app.isPackaged ? path.join(__dirname, "../../../extra/server") : path.join(__dirname, "../../extra/server"),
     stdio: "ignore"
   });
 
   log.info("Starting nginx server");
   nginxProcess = spawn("./nginx.exe", [], {
-    cwd: path.join(__dirname, "../../extra/nginx"),
+    cwd: app.isPackaged ? path.join(__dirname, "../../../extra/nginx") : path.join(__dirname, "../../extra/nginx"),
     stdio: "ignore"
   });
 
