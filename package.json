@@ -58,7 +58,7 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.1",
     "tcp-port-used": "^1.0.2",
-    "daisyui": "^2.6.0",
+    "daisyui": "^2.14.3",
     "dns": "^0.2.2",
     "hpagent": "^0.1.2"
   }
