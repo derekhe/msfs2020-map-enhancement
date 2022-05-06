@@ -4,8 +4,10 @@ import sys
 from threading import Thread
 
 from pygeotile.tile import Tile
+from requests import Session
 from shapely import geometry
 from shapely.geometry import Polygon
+from werkzeug import serving
 
 sys.path.append(os.path.curdir)
 
@@ -30,6 +32,7 @@ from log import logger
 import json
 
 urllib3.disable_warnings()
+urllib3.PoolManager(num_pools=100)
 
 app: Flask = Flask(__name__)
 map_providers = None
@@ -42,11 +45,13 @@ parser.add_argument('--config', default=None, required=False)
 argv = parser.parse_args()
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
-
+connection_sessions = {}
 
 def config_server(server_configs):
     global map_providers, cache
     map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs['mapboxAccessToken'])]
+    for provider in map_providers:
+        connection_sessions[provider.name] = Session()
 
     if server_configs['cacheEnabled']:
         cache = FanoutCache(
@@ -117,6 +122,7 @@ def mtx(dummy: str = None) -> Response:
 def tiles(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
     url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'
     proxy_address = server_configs['proxyAddress']
+
     content = requests.get(
         url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
         verify=False).content
@@ -214,14 +220,15 @@ def download_from_url(url):
     if content is None:
         proxy_address = server_configs['proxyAddress']
         logger.info("Downloading from: %s, %s", url, proxy_address)
-        resp = requests.get(
+        provider = get_selected_map_provider()
+        resp = connection_sessions[provider.name].get(
             url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
             verify=False)
 
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
         content = resp.content
-        if (resp.status_code != 200) or get_selected_map_provider().is_invalid_content(content):
+        if (resp.status_code != 200) or provider.is_invalid_content(content):
             return Response(status=404)
 
         cache.set(url, content)
@@ -297,10 +304,24 @@ def offline_download_worker(regions):
                                         get_selected_map_provider().tile_url(tile_x, tile_y, zoom_level))
 
 
+def disable_endpoint_logs():
+    disabled_endpoints = ('/statics', '/last-image.*?')
+
+    parent_log_request = serving.WSGIRequestHandler.log_request
+
+    def log_request(self, *args, **kwargs):
+        if not any(re.match(f"{de}$", self.path) for de in disabled_endpoints):
+            parent_log_request(self, *args, **kwargs)
+
+    serving.WSGIRequestHandler.log_request = log_request
+
+
 logger.info("Started with config %s", argv)
+
 if argv.config is not None:
     server_configs = json.loads(argv.config)
     logger.info("Start with %s", server_configs)
     config_server(server_configs)
 
-app.run(port=39871, threaded=True, debug=True)
+disable_endpoint_logs()
+app.run(port=39871, threaded=True)
