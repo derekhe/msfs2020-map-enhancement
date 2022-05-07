@@ -34,6 +34,7 @@ import { useOptionStore } from "./stores/optionStore";
 import Store from "electron-store";
 import { useStatusStore } from "./stores/statusStore";
 import { EVENT_CHECK_PORT } from "../../consts/custom-events";
+import log from "electron-log";
 
 export default {
   components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus },
@@ -65,17 +66,17 @@ export default {
   async mounted() {
     const store = new Store();
     this.optionStore.$subscribe((mutation, state) => {
-      console.log("Save state", state);
+      log.info("Save state", state);
       store.set("config", state);
     });
 
     this.$eventBus.on("show-alert", (msg) => {
-      console.log("received alert", msg);
+      log.info("received alert", msg);
       this.errorMessage = msg;
       this.alertEnabled = true;
     });
 
-    this.check443Port()
+    await this.check443Port()
   }
 };
 </script>

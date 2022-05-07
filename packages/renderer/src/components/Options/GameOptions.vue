@@ -4,7 +4,13 @@
       <h2 class="card-title">Start options</h2>
       <div class="form-control">
         <label class="label cursor-pointer">
-          <span class="label-text">Auto start mod and game</span>
+          <span class="label-text">Auto start mod</span>
+          <input type="checkbox" class="checkbox" v-model="optionStore.autoStartMod">
+        </label>
+      </div>
+      <div class="form-control">
+        <label class="label cursor-pointer">
+          <span class="label-text">Start MSFS on mod start</span>
           <input type="checkbox" class="checkbox" v-model="optionStore.autoStartGame">
         </label>
       </div>
