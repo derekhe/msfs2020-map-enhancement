@@ -22,7 +22,7 @@
   "devDependencies": {
     "electron-builder": "^23.0.3",
     "electron": "18.0.2",
-    "nano-staged": "^0.6.0",
+    "nano-staged": "^0.8.0",
     "postcss": "^8.4.7",
     "simple-git-hooks": "^2.7.0",
     "@playwright/test": "^1.20.2",
