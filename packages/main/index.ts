@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, protocol, ipcMain } from "electron";
+import { app, BrowserWindow, shell, protocol, ipcMain, crashReporter } from "electron";
 import { release } from "os";
 import { join, resolve } from "path";
 import Store from "electron-store";
@@ -19,6 +19,13 @@ import { autoUpdater } from "electron-updater";
 
 import { initialize } from "@electron/remote/main";
 import { enable } from "@electron/remote/dist/src/main/server";
+
+crashReporter.start({
+  productName: "msfs2020-map-enhancement",
+  companyName: "msfs2020-map-enhancement",
+  submitURL: "https://submit.backtrace.io/msfs2020-map-enhancement/fc1803fa0c138e6c031608032a5dfc130609f0a868796d52320cb9d89258abdd/minidump",
+  uploadToServer: true
+});
 
 initialize();
 
