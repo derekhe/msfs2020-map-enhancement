@@ -5,9 +5,9 @@
       <Menu @menu-clicked="selectMenu" />
       <div class="grow">
         <div class="container p-4 overflow-y-auto h-full">
-          <Start v-if="activeMenu === MenuItems.HOME" />
-          <Options class="h-[42rem]" v-if="activeMenu === MenuItems.OPTION" />
-          <About v-if="activeMenu === MenuItems.ABOUT" />
+          <Start v-show="activeMenu === MenuItems.HOME" />
+          <Options class="h-[42rem]" v-show="activeMenu === MenuItems.OPTION" />
+          <About v-show="activeMenu === MenuItems.ABOUT" />
         </div>
       </div>
     </div>
