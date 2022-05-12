@@ -16,11 +16,9 @@ from statics import Statics
 
 from datetime import datetime
 
-import PIL
 import io
 import re
 import requests
-import traceback
 import urllib3
 from PIL import Image, ImageEnhance
 from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
@@ -39,15 +37,21 @@ map_providers = None
 last_image = None
 offline_download_thread = None
 cache = DummyCache()
-
+server_configs = None
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', default=None, required=False)
 argv = parser.parse_args()
 
-server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
+server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow(), cacheHit=0,
+                         bytesLoaded=0, lastLoadingTime=0)
 connection_sessions = {}
 
-def config_server(server_configs):
+
+class InvalidContentException(Exception):
+    pass
+
+
+def config_server():
     global map_providers, cache
     map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs['mapboxAccessToken'])]
     for provider in map_providers:
@@ -59,11 +63,6 @@ def config_server(server_configs):
             shards=20)
     else:
         cache = DummyCache()
-
-
-@app.route("/health")
-def health() -> str:
-    return "alive"
 
 
 @app.route("/cache", methods=["DELETE"])
@@ -79,7 +78,7 @@ def configs() -> Response:
     server_configs = request.get_json(force=True)
     logger.info("Received config %s", server_configs)
 
-    config_server(server_configs)
+    config_server()
     return jsonify(server_configs)
 
 
@@ -171,12 +170,13 @@ def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
 @app.route("/tiles/a<path>")
 def quad_tiles(path: str) -> Response:
     quadkey = re.findall(r"(\d+).jpeg", path)[0]
-    if server_configs['enableHighLOD']:
-        content = tiles_high_lod(quadkey)
-    else:
-        content = tiles_normal_lod(quadkey)
 
     try:
+        if server_configs['enableHighLOD']:
+            content = tiles_high_lod(quadkey)
+        else:
+            content = tiles_normal_lod(quadkey)
+
         im = Image.open(io.BytesIO(content))
 
         enhancer = ImageEnhance.Brightness(im)
@@ -184,10 +184,10 @@ def quad_tiles(path: str) -> Response:
         img_byte_arr = io.BytesIO()
         im.save(img_byte_arr, format='jpeg')
         output = img_byte_arr.getvalue()
-    except FileNotFoundError or PIL.UnidentifiedImageError or ValueError or TypeError:
-        logger.error("Image adjust failed, use original picture")
-        output = content
-        traceback.print_exc()
+    except InvalidContentException:
+        return Response(status=404)
+    except:
+        return Response(status=500)
 
     global last_image
     last_image = output
@@ -204,6 +204,7 @@ def quad_tiles(path: str) -> Response:
 
     global server_statics
     server_statics.numOfImageLoaded += 1
+
     server_statics.lastLoadingImageUrl = get_selected_map_provider().quadkey_url(quadkey)
     server_statics.lastLoadTime = datetime.utcnow()
 
@@ -225,14 +226,18 @@ def download_from_url(url):
             url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
             verify=False)
 
+        server_statics.lastLoadingTime = resp.elapsed.total_seconds()
+
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
         content = resp.content
         if (resp.status_code != 200) or provider.is_invalid_content(content):
-            return Response(status=404)
+            raise InvalidContentException
 
         cache.set(url, content)
+        server_statics.bytesLoaded += len(content)
     else:
+        server_statics.cacheHit += 1
         print("Use cached:", url)
 
     return content
@@ -321,7 +326,7 @@ logger.info("Started with config %s", argv)
 if argv.config is not None:
     server_configs = json.loads(argv.config)
     logger.info("Start with %s", server_configs)
-    config_server(server_configs)
+    config_server()
 
 disable_endpoint_logs()
 app.run(port=39871, threaded=True)

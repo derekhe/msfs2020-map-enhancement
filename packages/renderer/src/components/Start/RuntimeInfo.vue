@@ -12,16 +12,16 @@
       <div class="flex-none">
         <button class="btn btn-sm btn-primary" @click="donate">
           <a href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US" target="_blank">
-          DONATE A CUP OF COFFEE</a></button>
+            DONATE A CUP OF COFFEE</a></button>
       </div>
     </div>
     <div class="stats shadow bg-neutral-focus flex justify-center">
       <div class="stat">
         <div class="stat-title">Total Loaded Image</div>
         <div class="stat-value text-primary">{{ statics.numOfImageLoaded }}</div>
-        <div class="stat-desc">{{ statics.lastLoadTime }}</div>
+        <div class="stat-desc">{{ lastLoadTimeFormatted }}</div>
+        <div class="stat-desc">({{statics.lastLoadingTime.toFixed(1)}}s)</div>
       </div>
-
       <div class="stat">
         <div class="stat-title">Loaded Image</div>
         <div class="stat-value text-secondary">
@@ -30,6 +30,14 @@
         <div class="stat-desc truncate w-32">
           <a target="_blank" :href="statics.lastLoadingImageUrl">{{ statics.lastLoadingImageUrl }}</a>
         </div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">Cache Hit</div>
+        <div class="stat-value text-primary">{{ statics.cacheHit }}/{{ cacheRate }}%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">Data Usage</div>
+        <div class="stat-value text-primary">{{ usedInMB }}MB</div>
       </div>
     </div>
   </div>
@@ -51,7 +59,10 @@ export default {
       statics: {
         numOfImageLoaded: 0,
         lastLoadingImageUrl: 0,
-        lastLoadTime: 0
+        lastLoadTime: 0,
+        lastLoadingTime: 0,
+        cacheHit: 0,
+        bytesLoaded: 0
       }
     };
   },
@@ -71,6 +82,12 @@ export default {
     },
     lastLoadTimeFormatted() {
       return moment(this.statics.lastLoadTime).calendar();
+    },
+    usedInMB() {
+      return Math.round(this.statics.bytesLoaded / 1024 / 1024);
+    },
+    cacheRate() {
+      return (this.statics.cacheHit / this.statics.numOfImageLoaded * 100).toFixed(1);
     }
   },
   methods: {
@@ -81,7 +98,7 @@ export default {
         }
       }).json();
     },
-    donate(){
+    donate() {
 
     }
   }

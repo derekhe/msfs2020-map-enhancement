@@ -22,8 +22,7 @@
       <p>Mapbox provide better and newer images in some places, please sign up a free key in <a class="link"
                                                                                                 href="https://account.mapbox.com/access-tokens"
                                                                                                 target="_blank">https://account.mapbox.com/access-tokens</a>
-        and input it
-        below"></p>
+        and input it below.</p>
       <p>Note: mapbox access token provides 200,000 tiles for free, please consider use the "Rolling Cache" in side game
         or enable the "Cache" inside this mod.</p>
       <div class="form-control">
