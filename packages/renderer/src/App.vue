@@ -8,6 +8,7 @@
           <Start v-show="activeMenu === MenuItems.HOME" />
           <Options class="h-[42rem]" v-show="activeMenu === MenuItems.OPTION" />
           <About v-show="activeMenu === MenuItems.ABOUT" />
+          <ReportIssue v-show="activeMenu===MenuItems.REPORT_ISSUE"/>
         </div>
       </div>
     </div>
@@ -28,6 +29,7 @@ import Start from "./components/Start/Start.vue";
 import Options from "./components/Options/Options.vue";
 import About from "./components/About/About.vue";
 import ServerStatus from "./components/common/ServerStatus.vue";
+import ReportIssue from "./components/ReportIssue/ReportIssue.vue";
 import { FAQ_PAGE_URL, MenuItems } from "./const";
 import Alert from "./components/common/Alert.vue";
 import { useOptionStore } from "./stores/optionStore";
@@ -37,7 +39,7 @@ import { EVENT_CHECK_PORT } from "../../consts/custom-events";
 import log from "electron-log";
 
 export default {
-  components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus },
+  components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus, ReportIssue},
   setup() {
     const optionStore = useOptionStore();
     const statusStore = useStatusStore();

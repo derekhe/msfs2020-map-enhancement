@@ -1,7 +1,7 @@
 export const FAQ_PAGE_URL = "https://github.com/derekhe/msfs2020-map-enhancement/wiki/FAQ";
 
 export const enum MenuItems {
-  HOME, OPTION, ABOUT
+  HOME, OPTION, ABOUT, REPORT_ISSUE
 }
 
 export const MapProviders = {
