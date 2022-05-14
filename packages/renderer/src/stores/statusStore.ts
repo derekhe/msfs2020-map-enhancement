@@ -6,7 +6,8 @@ export const useStatusStore = defineStore({
   state: () => {
     return {
       imageAccessHealthCheckResult: STATUS.NotStarted,
-      nginxServerHealthCheckResult: STATUS.NotStarted
+      nginxServerHealthCheckResult: STATUS.NotStarted,
+      updateInfo: undefined
     };
   }
 });

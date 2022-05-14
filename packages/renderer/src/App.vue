@@ -7,8 +7,8 @@
         <div class="container p-4 overflow-y-auto h-full">
           <Start v-show="activeMenu === MenuItems.HOME" />
           <Options class="h-[42rem]" v-show="activeMenu === MenuItems.OPTION" />
-          <About v-show="activeMenu === MenuItems.ABOUT" />
-          <ReportIssue v-show="activeMenu===MenuItems.REPORT_ISSUE"/>
+          <About v-show="activeMenu === MenuItems.ABOUT" :update-info="updateInfo" />
+          <ReportIssue v-show="activeMenu===MenuItems.REPORT_ISSUE" />
         </div>
       </div>
     </div>
@@ -35,11 +35,11 @@ import Alert from "./components/common/Alert.vue";
 import { useOptionStore } from "./stores/optionStore";
 import Store from "electron-store";
 import { useStatusStore } from "./stores/statusStore";
-import { EVENT_CHECK_PORT } from "../../consts/custom-events";
+import { EVENT_CHECK_PORT, EVENT_CHECK_UPDATE } from "../../consts/custom-events";
 import log from "electron-log";
 
 export default {
-  components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus, ReportIssue},
+  components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus, ReportIssue },
   setup() {
     const optionStore = useOptionStore();
     const statusStore = useStatusStore();
@@ -50,7 +50,8 @@ export default {
       MenuItems: MenuItems,
       activeMenu: MenuItems.HOME,
       errorMessage: "",
-      alertEnabled: false
+      alertEnabled: false,
+      updateInfo: undefined
     };
   },
   methods: {
@@ -63,6 +64,12 @@ export default {
         window.open(FAQ_PAGE_URL, "_blank");
         this.$eventBus.emit("show-alert", "443 Port is using, the mod won't work. Please read FAQ to solve the problem and close any application using 443 port");
       }
+    },
+    async getVersionUpdate() {
+      this.statusStore.updateInfo = undefined;
+      const result = await window.ipcRenderer.invoke(EVENT_CHECK_UPDATE);
+      log.info("Found update info", result);
+      this.statusStore.updateInfo = result;
     }
   },
   async mounted() {
@@ -78,7 +85,10 @@ export default {
       this.alertEnabled = true;
     });
 
-    await this.check443Port()
+    setTimeout(async () => {
+      await this.check443Port();
+      await this.getVersionUpdate();
+    }, 0);
   }
 };
 </script>
