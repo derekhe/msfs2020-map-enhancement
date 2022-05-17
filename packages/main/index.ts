@@ -66,7 +66,8 @@ async function createWindow() {
     width: 1024,
     height: 900,
     minWidth: 1024,
-    minHeight: 900
+    minHeight: 900,
+    icon: "./resources/public/icon.png"
   });
 
   enable(win.webContents);
