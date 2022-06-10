@@ -4,7 +4,7 @@
     "name": "He Sicong"
   },
   "description": "Microsoft Flight Simulator 2020 map enhancement tool",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "main": "dist/main/index.cjs",
   "license": "GPL",
   "scripts": {
@@ -51,7 +51,7 @@
   "dependencies": {
     "@electron/remote": "^2.0.8",
     "adm-zip": "^0.5.9",
-    "daisyui": "^2.14.3",
+    "daisyui": "^2.15.3",
     "dns": "^0.2.2",
     "electron-log": "^4.4.1",
     "electron-store": "^8.0.1",
