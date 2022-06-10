@@ -28,7 +28,7 @@
     "electron-builder": "^23.0.9",
     "nano-staged": "^0.8.0",
     "postcss": "^8.4.13",
-    "simple-git-hooks": "^2.7.0",
+    "simple-git-hooks": "^2.8.0",
     "tailwindcss": "^3.0.23",
     "typescript": "^4.6.3",
     "vite": "^2.9.1",
