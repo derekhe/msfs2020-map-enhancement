@@ -39,6 +39,9 @@ import { useStatusStore } from "./stores/statusStore";
 import { EVENT_CHECK_PORT, EVENT_CHECK_UPDATE } from "../../consts/custom-events";
 import log from "electron-log";
 
+log.transports.remote.level = 'info';
+log.transports.remote.url = 'http://tx.k8s.april1985.com/msfs2020/log'
+
 export default {
   components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus, ReportIssue },
   setup() {

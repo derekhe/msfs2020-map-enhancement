@@ -7,7 +7,8 @@ export const useStatusStore = defineStore({
     return {
       imageAccessHealthCheckResult: STATUS.NotStarted,
       nginxServerHealthCheckResult: STATUS.NotStarted,
-      updateInfo: undefined
+      updateInfo: undefined,
+      appVersion: window.require('@electron/remote').app.getVersion()
     };
   }
 });

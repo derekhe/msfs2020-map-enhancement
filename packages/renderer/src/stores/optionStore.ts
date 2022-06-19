@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import Store from "electron-store";
 import got from "got";
 import log from "electron-log";
+// @ts-ignore
+import { v4 as uuidv4 } from "uuid";
 
 const defaultConfig = {
   autoStartGame: false,
@@ -14,7 +16,8 @@ const defaultConfig = {
   cacheLocation: "D:\\cache",
   cacheEnabled: false,
   cacheSizeGB: 10,
-  firstTime: true
+  firstTime: true,
+  userId: uuidv4()
 };
 
 const store = new Store();
@@ -23,21 +26,23 @@ export const useOptionStore = defineStore({
   id: "options",
   state: () => {
     // @ts-ignore
-    return {...defaultConfig, ...store.get("config", defaultConfig) as object};
+    let options = { ...defaultConfig, ...store.get("config", defaultConfig) as object };
+    log.transports.remote.client = { "uuid": options.userId };
+    return options;
   },
   actions: {
     reset() {
-      log.info("Clearing local state")
+      log.info("Clearing local state");
       store.clear();
     },
     async updateServerConfig() {
-      log.info("Update server config");
       const body = JSON.parse(JSON.stringify(this.$state));
+      log.info("Update server config: " + JSON.stringify(this.$state));
       await got.post("http://localhost:39871/configs", {
         json: body
       });
     },
-    toJson(){
+    toJson() {
       return JSON.parse(JSON.stringify(this.$state));
     }
   }

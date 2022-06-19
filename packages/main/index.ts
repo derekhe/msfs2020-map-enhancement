@@ -1,10 +1,11 @@
-import { app, BrowserWindow, shell, protocol, ipcMain, crashReporter } from "electron";
+import { app, BrowserWindow, crashReporter, dialog, ipcMain, protocol, shell } from "electron";
 import path, { join, resolve } from "path";
 import Store from "electron-store";
 import log from "electron-log";
 import {
   EVENT_CHECK_PORT,
-  EVENT_CHECK_UPDATE, EVENT_COLLECT_LOGS,
+  EVENT_CHECK_UPDATE,
+  EVENT_COLLECT_LOGS,
   EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER
@@ -21,6 +22,8 @@ import { enable } from "@electron/remote/dist/src/main/server";
 // @ts-ignore
 import adm_zip from "adm-zip";
 import moment from "moment";
+// @ts-ignore
+import { v4 as uuidv4 } from "uuid";
 
 crashReporter.start({
   productName: "msfs2020-map-enhancement",
@@ -28,6 +31,9 @@ crashReporter.start({
   submitURL: "https://submit.backtrace.io/msfs2020-map-enhancement/fc1803fa0c138e6c031608032a5dfc130609f0a868796d52320cb9d89258abdd/minidump",
   uploadToServer: true
 });
+
+log.transports.remote.level = "info";
+log.transports.remote.url = "http://tx.k8s.april1985.com/msfs2020/log";
 
 app.commandLine.appendSwitch("--no-sandbox");
 
@@ -47,9 +53,18 @@ if (!app.requestSingleInstanceLock()) {
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 
 let win: BrowserWindow | null = null;
+let status = {
+  isServerRunning: false
+};
 
 async function createWindow() {
   Store.initRenderer();
+  let store = new Store();
+  let config = store.get("config", { userId: uuidv4() }) as object;
+  // @ts-ignore
+  log.transports.remote.client = { "uuid": config.userId };
+  log.info("Application started");
+  log.info("Version: " + app.getVersion());
 
   win = new BrowserWindow({
     title: "Main window",
@@ -88,6 +103,22 @@ async function createWindow() {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+
+  win.on("close", (e) => {
+    if (status.isServerRunning) {
+      let response = dialog.showMessageBoxSync(win!, {
+        type: "question",
+        buttons: ["Yes, please", "No, thanks"],
+        defaultId: 2,
+        title: "Question",
+        message: "Mod is still running, do you want to quit?"
+      });
+
+      if (response == 1) {
+        e.preventDefault();
+      }
+    }
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -110,6 +141,7 @@ app.on("activate", async () => {
 });
 
 app.on("window-all-closed", async () => {
+  log.info("Application closed");
   try {
     await StopServer();
   } catch (e) {
@@ -122,6 +154,7 @@ app.on("window-all-closed", async () => {
 });
 
 ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
+  status.isServerRunning = false;
   log.info("Staring server with", JSON.stringify(arg));
 
   try {
@@ -136,6 +169,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
     await patchHostsFile();
     await startMapServer(JSON.stringify(arg));
     log.info("Start map server success");
+    status.isServerRunning = true;
     return { success: true };
   } catch (e) {
     log.error("Start map server failed", e);
@@ -157,6 +191,7 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
 async function StopServer() {
   unpatchHostsFile();
   await stopServer();
+  status.isServerRunning = false;
 }
 
 ipcMain.handle(EVENT_CHECK_PORT, async () => {
