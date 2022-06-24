@@ -65,6 +65,10 @@ async function createWindow() {
   log.transports.remote.client = { "uuid": config.userId, "version": app.getVersion() };
   log.info("Application started");
   log.info("Version: " + app.getVersion());
+  // @ts-ignore
+  if (!config.remoteLogEnabled) {
+    log.transports.remote.level = false;
+  }
 
   win = new BrowserWindow({
     title: "Main window",
@@ -208,19 +212,19 @@ ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
   return updateCheckResult.updateInfo;
 });
 
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
   const dialogOpts = {
-    type: 'info',
-    buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-  }
+    type: "info",
+    buttons: ["Restart", "Later"],
+    title: "Application Update",
+    message: process.platform === "win32" ? releaseNotes : releaseName,
+    detail: "A new version has been downloaded. Restart the application to apply the updates."
+  };
 
   dialog.showMessageBox(dialogOpts).then((returnValue) => {
-    if (returnValue.response === 0) autoUpdater.quitAndInstall()
-  })
-})
+    if (returnValue.response === 0) autoUpdater.quitAndInstall();
+  });
+});
 
 ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
   await startGame(arg["distributor"]);

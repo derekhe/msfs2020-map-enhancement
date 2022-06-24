@@ -65,5 +65,9 @@
     "pinia": "^2.0.13",
     "tcp-port-used": "^1.0.2",
     "uuid": "^8.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/derekhe/msfs2020-map-enhancement"
   }
 }

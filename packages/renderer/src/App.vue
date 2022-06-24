@@ -46,6 +46,7 @@ export default {
   components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus, ReportIssue },
   setup() {
     const optionStore = useOptionStore();
+
     const statusStore = useStatusStore();
     return { optionStore, statusStore };
   },

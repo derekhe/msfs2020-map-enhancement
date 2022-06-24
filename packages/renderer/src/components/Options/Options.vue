@@ -4,6 +4,7 @@
     <MapOptions />
     <CacheOptions />
     <ProxySettings />
+    <Privacy/>
     <ResetToDefault/>
   </div>
 </template>
@@ -15,10 +16,11 @@ import MapOptions from "./MapOptions.vue";
 import CacheOptions from "./CacheOptions.vue";
 import ProxySettings from "./ProxySettings.vue";
 import ResetToDefault from "./ResetToDefault.vue";
+import Privacy from "./Privacy.vue";
 
 export default {
   name: "Options",
-  components: { ResetToDefault, MapOptions, GameOptions, CacheOptions, ProxySettings }
+  components: { Privacy, ResetToDefault, MapOptions, GameOptions, CacheOptions, ProxySettings }
 };
 </script>
 

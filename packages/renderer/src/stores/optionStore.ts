@@ -17,7 +17,8 @@ const defaultConfig = {
   cacheEnabled: false,
   cacheSizeGB: 10,
   firstTime: true,
-  userId: uuidv4()
+  userId: uuidv4(),
+  remoteLogEnabled: true
 };
 
 const store = new Store();
@@ -31,6 +32,11 @@ export const useOptionStore = defineStore({
       "uuid": options.userId,
       "version": window.require("@electron/remote").app.getVersion()
     };
+
+    if(!options.remoteLogEnabled){
+      log.transports.remote.level = false;
+    }
+
     return options;
   },
   actions: {
