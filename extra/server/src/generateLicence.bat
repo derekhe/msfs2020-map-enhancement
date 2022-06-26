@@ -1,0 +1,1 @@
+pyarmor licenses -e 2022-07-30

@@ -18,6 +18,7 @@ const defaultConfig = {
   cacheSizeGB: 10,
   firstTime: true,
   userId: uuidv4(),
+  license: null,
   remoteLogEnabled: true
 };
 

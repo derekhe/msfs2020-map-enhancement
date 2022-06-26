@@ -3,20 +3,24 @@ import path from "path";
 import log from "electron-log";
 import util from "util";
 import { app } from "electron";
+import fs from "fs";
 
 const execAsync = util.promisify(execFile);
 let imageServer: ChildProcess;
 let nginxProcess: ChildProcess;
 
-export async function startMapServer(options: any): Promise<void> {
+export async function startMapServer(options: string, license: string): Promise<void> {
   log.info("Starting map server");
 
   let args = ["server.py"];
   args.push("--config", options);
 
-  let pythonProgramDir = app.isPackaged ? path.join(__dirname, "../../../extra/server/") : path.join(__dirname, "../../extra/server/");
+  let pythonProgramDir = app.isPackaged ? path.join(__dirname, "../../../extra/server/dist") : path.join(__dirname, "../../extra/server/dist");
+  if (license) {
+    fs.writeFileSync(path.join(pythonProgramDir, "license.lic"), license, { flag: "w", encoding: "utf-8" });
+  }
 
-  imageServer = spawn("./python/pymsfs2020.exe", args, {
+  imageServer = spawn("../python/pymsfs2020.exe", args, {
     cwd: pythonProgramDir,
     stdio: "ignore"
   });

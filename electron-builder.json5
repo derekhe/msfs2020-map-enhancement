@@ -11,7 +11,8 @@
   },
   extraResources: [
     "./extra/nginx",
-    "./extra/server/",
+    "./extra/server/dist",
+    "./extra/server/python",
     "./extra/nginx/temp/**",
     "!**/*.log",
     "public/icon.png",

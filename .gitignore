@@ -40,3 +40,4 @@ pnpm-debug.log*
 /extra/nginx/conf/key.pem
 /extra/server/python/
 /extra/server/logs/
+/extra/server/src/licenses/

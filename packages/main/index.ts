@@ -3,6 +3,7 @@ import path, { join, resolve } from "path";
 import Store from "electron-store";
 import log from "electron-log";
 import {
+  EVENT_CHECK_LICENCE,
   EVENT_CHECK_PORT,
   EVENT_CHECK_UPDATE,
   EVENT_COLLECT_LOGS,
@@ -24,6 +25,7 @@ import adm_zip from "adm-zip";
 import moment from "moment";
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
+import { checkLicence } from "../services/licence";
 
 crashReporter.start({
   productName: "msfs2020-map-enhancement",
@@ -98,8 +100,8 @@ async function createWindow() {
     const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_DEV_SERVER_PORT"]}`;
 
     await win.loadURL(url);
-    await win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.1.4_0"));
     //win.webContents.openDevTools();
+    //win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.0.0.21_0"));
   }
 
   // Make all links open with the browser, not with the application
@@ -171,7 +173,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   try {
     await addCertificate();
     await patchHostsFile();
-    await startMapServer(JSON.stringify(arg));
+    await startMapServer(JSON.stringify(arg), arg.license);
     log.info("Start map server success");
     status.isServerRunning = true;
     return { success: true };
@@ -250,4 +252,8 @@ ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   log.info("Done creating zip file");
 
   return targetFileName;
+});
+
+ipcMain.handle(EVENT_CHECK_LICENCE, async (event, arg)=>{
+  return checkLicence(arg)
 });
