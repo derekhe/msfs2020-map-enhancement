@@ -24,7 +24,7 @@
     "@tailwindcss/typography": "^0.5.2",
     "@types/adm-zip": "^0.5.0",
     "@vitejs/plugin-vue": "^2.1.0",
-    "electron": "18.2.0",
+    "electron": "19.0.7",
     "electron-builder": "^23.0.9",
     "nano-staged": "^0.8.0",
     "postcss": "^8.4.13",
