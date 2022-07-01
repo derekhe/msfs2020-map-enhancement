@@ -57,7 +57,7 @@
     "electron-log": "^4.4.1",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.1",
-    "got": "^11.8.3",
+    "got": "^12.1.0",
     "hpagent": "^1.0.0",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
