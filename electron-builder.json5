@@ -38,7 +38,7 @@
     allowElevation: true,
     allowToChangeInstallationDirectory: true,
     perMachine: true,
-    deleteAppDataOnUninstall: true
+    deleteAppDataOnUninstall: false
   },
   publish: [
     "github"
