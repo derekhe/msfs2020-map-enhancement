@@ -112,7 +112,7 @@ async function createWindow() {
     return { action: "deny" };
   });
 
-  win.on("minimize", (e) => {
+  win.on("minimize", (e: Event) => {
     e.preventDefault();
     win?.hide();
   });
@@ -138,6 +138,7 @@ async function createWindow() {
   });
 
   win.on("close", (e) => {
+      // @ts-ignore
       if (store.get("config")["closeToTray"]) {
         if (!quitFromTray) {
           e.preventDefault();
@@ -227,7 +228,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   }
 });
 
-ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
+ipcMain.handle(EVENT_STOP_SERVER, async () => {
   try {
     await StopServer();
     log.info("Stop server success");
