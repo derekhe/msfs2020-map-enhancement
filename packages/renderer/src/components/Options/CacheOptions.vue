@@ -8,7 +8,7 @@
       <p>
         "Rolling Cache" can be turned on while the mod's cache is on if you stick to one server provider.</p>
       <p>
-        To change any options, you need to restart the injection to take effect.
+        To change any options, you need to restart the mod to take effect.
       </p>
 
       <div class="space-y-4">
@@ -29,6 +29,7 @@
 
         <h3>Cache size {{ optionStore.cacheSizeGB }}GB</h3>
         <input type="range" min="10" max="100" class="range" v-model="optionStore.cacheSizeGB">
+        <p>Clear cache is available when the "Image Server" is green.</p>
         <button class="btn" @click="clear">Clear cache</button>
         <p>{{ clearStatus }}</p>
       </div>

@@ -1,1 +1,1 @@
-pyarmor licenses -e 2022-07-30
+pyarmor licenses -e 2022-10-01 --enable-period-mode
