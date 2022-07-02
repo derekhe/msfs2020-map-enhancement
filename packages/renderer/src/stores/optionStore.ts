@@ -19,7 +19,8 @@ const defaultConfig = {
   firstTime: true,
   userId: uuidv4(),
   license: "RypWRVJTSU9OOnB5YXJtb3ItdmF4LTAwMjgxMy4yCipUSU1FOjE2NjQ1NTM2MDAKKkZMQUdTOgIqQ09ERTpyZWdjb2RlLTAxDORivMfzhYZ0Hx0QxNDnlRu4vw9S7PnuCSZlHm4sZii2FT28kqUAWJ51BLyMzX9jHb+z/dFsReEx7DV2oQ88WqqmKNgYtsLen/fzL0QW7qQAUdgXpBlolU8Q+PUyEyNcciBzwTv6AnS1OCFJcthE8rct+1r0i0olVvB6bd9h8sJ1p4yNnb1EWrh3DYwcPzY4gHOiXVKyIl0mVAVr3N127f0Lzxxop4G93nxDgvqvPmUpV3iW25irY7lDBjWzBUQwH5I9Tmd5rXm0Ulxrn/bTIqsmH+wffR2D3ZBWh2x6LA7upnDU0ysy/S567zHfRgJXTefxTdYoqLKLAXyd/GOQpA==",
-  remoteLogEnabled: true
+  remoteLogEnabled: true,
+  closeToTray: false,
 };
 
 const store = new Store();

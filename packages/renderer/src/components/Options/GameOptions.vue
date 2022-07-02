@@ -14,6 +14,12 @@
           <input type="checkbox" class="checkbox" v-model="optionStore.autoStartGame">
         </label>
       </div>
+      <div class="form-control">
+        <label class="label cursor-pointer">
+          <span class="label-text">Go to tray when click windows close button</span>
+          <input type="checkbox" class="checkbox" v-model="optionStore.closeToTray">
+        </label>
+      </div>
       <p>Game Store</p>
       <div class="form-control">
         <label class="label cursor-pointer">

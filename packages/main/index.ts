@@ -1,5 +1,5 @@
-import { app, BrowserWindow, crashReporter, dialog, ipcMain, protocol, shell } from "electron";
-import path, { join, resolve } from "path";
+import { app, BrowserWindow, crashReporter, dialog, ipcMain, Menu, nativeImage, protocol, shell, Tray } from "electron";
+import path, { join } from "path";
 import Store from "electron-store";
 import log from "electron-log";
 import {
@@ -63,10 +63,12 @@ async function createWindow() {
   Store.initRenderer();
   let store = new Store();
   let config = store.get("config", { userId: uuidv4() }) as object;
+
   // @ts-ignore
   log.transports.remote.client = { "uuid": config.userId, "version": app.getVersion() };
   log.info("Application started");
   log.info("Version: " + app.getVersion());
+
   // @ts-ignore
   if (!config.remoteLogEnabled) {
     log.transports.remote.level = false;
@@ -110,21 +112,63 @@ async function createWindow() {
     return { action: "deny" };
   });
 
-  win.on("close", (e) => {
-    if (status.isServerRunning) {
-      let response = dialog.showMessageBoxSync(win!, {
-        type: "question",
-        buttons: ["Yes, please", "No, thanks"],
-        defaultId: 2,
-        title: "Question",
-        message: "Mod is still running, do you want to quit?"
-      });
+  win.on("minimize", (e) => {
+    e.preventDefault();
+    win?.hide();
+  });
 
-      if (response == 1) {
-        e.preventDefault();
+  const tray = new Tray(nativeImage.createFromPath(app.isPackaged ? "./resources/public/icon.png" : "./public/icon.png"));
+  let quitFromTray = false;
+  tray.setToolTip("MSFS2020 Map Enhancement");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {
+      label: "Show App", click: function() {
+        win!.show();
+      }
+    },
+    {
+      label: "Quit", click: function() {
+        quitFromTray = true;
+        app.quit();
       }
     }
+  ]));
+  tray.on("double-click", () => {
+    win!.show();
   });
+
+  win.on("close", (e) => {
+      if (store.get("config")["closeToTray"]) {
+        if (!quitFromTray) {
+          e.preventDefault();
+          win!.hide();
+          e.returnValue = false;
+        } else {
+          tray.destroy();
+          if (status.isServerRunning) {
+            stopServer();
+          }
+        }
+      } else {
+        if (status.isServerRunning) {
+          let response = dialog.showMessageBoxSync(win!, {
+            type: "question",
+            buttons: ["Yes, please", "No, thanks"],
+            defaultId: 2,
+            title: "Question",
+            message: "Mod is still running, do you want to quit?"
+          });
+
+          if (response == 1) {
+            e.preventDefault();
+          } else {
+            stopServer();
+          }
+        }
+      }
+    }
+  )
+  ;
 }
 
 app.whenReady().then(createWindow);
@@ -254,6 +298,6 @@ ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   return targetFileName;
 });
 
-ipcMain.handle(EVENT_CHECK_LICENCE, async (event, arg)=>{
-  return checkLicence(arg)
+ipcMain.handle(EVENT_CHECK_LICENCE, async (event, arg) => {
+  return checkLicence(arg);
 });
