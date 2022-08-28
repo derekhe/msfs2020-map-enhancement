@@ -9,6 +9,8 @@ assignees: ''
 
 **Describe the bug**
 
+Please describe the bug in detail to help me understand the scenario
+
 **MSFS version:**
  - msstore or steam
  - MSFS2020 Version [e.g. 22]
@@ -17,10 +19,11 @@ assignees: ''
 - Mod version
 
 **Log**
-- Please use the "Collect Logs" button in "Report Issue" page and attach the zip file 
+- Please attach the log zip file 
 
 **Screenshots**
 
+Please provide me screenshots for the mod and msfs2020 if possible
 
 **Additional context**
 Add any other context about the problem here.
