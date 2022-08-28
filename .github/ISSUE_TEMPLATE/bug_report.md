@@ -18,6 +18,9 @@ Please describe the bug in detail to help me understand the scenario
 **Mod version:**
 - Mod version
 
+**Device ID**
+- Device ID
+
 **Log**
 - Please attach the log zip file 
 
