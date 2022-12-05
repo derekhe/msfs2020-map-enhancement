@@ -8,7 +8,7 @@
         <n-collapse :default-expanded-names="['1', '2', '3']">
           <n-collapse-item title="Mod Control" name="1">
             <n-space>
-              <n-switch>
+              <n-switch @update:value="handleUpdateValue">
                 <template #checked>Back to Bing Map</template>
                 <template #unchecked>Inject Google Map</template>
               </n-switch>
@@ -41,7 +41,10 @@
 </template>
 
 <script>
-export default {
+import { defineComponent } from "vue";
+import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+
+export default defineComponent({
   name: "Home",
   data() {
     return {
@@ -49,7 +52,18 @@ export default {
       selectedServer: "mt.google.com",
     };
   },
-};
+  setup() {
+    return {
+      handleUpdateValue(value) {
+        if (value) {
+          window.ipcRenderer.send(EVENT_START_SERVER);
+        } else {
+          window.ipcRenderer.send(EVENT_STOP_SERVER);
+        }
+      },
+    };
+  },
+});
 </script>
 
 <style scoped>
