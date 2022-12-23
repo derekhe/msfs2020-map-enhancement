@@ -12,15 +12,17 @@ import { startMapServer, stopMapServer } from "@/services/mapServer";
 // @ts-ignore
 import log from "electron-log";
 import path from "path";
+import Store from "electron-store";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } },
+  { scheme: "app", privileges: { secure: true, standard: true } }
 ]);
 
 async function createWindow() {
+  Store.initRenderer()
   // Create the browser window.
   const win = new BrowserWindow({
     width: 800,
@@ -31,8 +33,8 @@ async function createWindow() {
       nodeIntegration: process.env
         .ELECTRON_NODE_INTEGRATION as unknown as boolean,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      preload: path.join(__dirname, "preload.js"),
-    },
+      preload: path.join(__dirname, "preload.js")
+    }
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -91,6 +93,7 @@ if (isDevelopment) {
   }
 }
 
+
 ipcMain.on(EVENT_START_SERVER, async (event, arg) => {
   try {
     await addCertificate();
@@ -100,8 +103,10 @@ ipcMain.on(EVENT_START_SERVER, async (event, arg) => {
 
   patchHostsFile();
 
+  const { proxyAddress, selectedServer } = arg;
+
   try {
-    await startMapServer();
+    await startMapServer(proxyAddress, selectedServer);
   } catch (e) {
     log.error("Start map server failed", e);
   }
