@@ -9,7 +9,10 @@ export const addCertificate = async (): Promise<void> => {
   const { stdout } = await execAsync(
     "certutil",
     ["-addstore", "-f", "root", "cert.crt"],
-    { cwd: path.join(__dirname, "../extra/certs"), shell: true }
+    {
+      cwd: path.join(__dirname, "../extra/certs"),
+      shell: true,
+    }
   );
   log.info(stdout);
 };

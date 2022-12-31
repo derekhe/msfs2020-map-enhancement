@@ -4,7 +4,7 @@ import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
 import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
-import { ERROR_NGINX_START_FAILED } from "@/consts/custom-errors";
+
 import { addCertificate, removeCertificate } from "@/services/certificate";
 import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
 import { startMapServer, stopMapServer } from "@/services/mapServer";
@@ -18,11 +18,11 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } }
+  { scheme: "app", privileges: { secure: true, standard: true } },
 ]);
 
 async function createWindow() {
-  Store.initRenderer()
+  Store.initRenderer();
   // Create the browser window.
   const win = new BrowserWindow({
     width: 800,
@@ -33,8 +33,8 @@ async function createWindow() {
       nodeIntegration: process.env
         .ELECTRON_NODE_INTEGRATION as unknown as boolean,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      preload: path.join(__dirname, "preload.js")
-    }
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -93,33 +93,30 @@ if (isDevelopment) {
   }
 }
 
-
-ipcMain.on(EVENT_START_SERVER, async (event, arg) => {
-  try {
-    await addCertificate();
-  } catch (e) {
-    log.error(e);
-  }
-
-  patchHostsFile();
-
+ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   const { proxyAddress, selectedServer } = arg;
 
   try {
+    await addCertificate();
+    patchHostsFile();
     await startMapServer(proxyAddress, selectedServer);
+    log.info("Start map server success");
+    return {success: true};
   } catch (e) {
     log.error("Start map server failed", e);
+    return {success: false, error: e};
   }
 });
 
-ipcMain.on(EVENT_STOP_SERVER, async (event, arg) => {
-  removeCertificate();
-  unpatchHostsFile();
-
+ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
   try {
+    await removeCertificate();
+    unpatchHostsFile();
     await stopMapServer();
+    log.info("Stop server success");
+    return {success: true};
   } catch (e) {
     log.error("Stop server failed", e);
-    event.reply(ERROR_NGINX_START_FAILED, e);
+    return {success: false, error: e};
   }
 });
