@@ -5,7 +5,7 @@ import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
 import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 
-import { addCertificate, removeCertificate } from "@/services/certificate";
+import { addCertificate} from "@/services/certificate";
 import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
 import { startMapServer, stopNginxServer } from "@/services/mapServer";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -132,7 +132,6 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
 });
 
 async function StopServer() {
-  await removeCertificate();
   unpatchHostsFile();
   await stopNginxServer();
 }

@@ -7,10 +7,20 @@ const execAsync = util.promisify(execFile);
 
 export const addCertificate = async (): Promise<void> => {
   const { stdout } = await execAsync(
-    "certutil",
-    ["-addstore", "-f", "root", "cert.crt"],
+    "mkcert.exe",
+    [
+      "-install",
+      "-key-file",
+      "key.pem",
+      "-cert-file",
+      "cert.pem",
+      "kh.ssl.ak.tiles.virtualearth.net",
+      "khstorelive.azureedge.net",
+      "*.virtualearth.net",
+      "*.azureedge.net",
+    ],
     {
-      cwd: path.join(__dirname, "../extra/certs"),
+      cwd: path.join(__dirname, "../extra/nginx/conf"),
       shell: true,
     }
   );

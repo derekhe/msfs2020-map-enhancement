@@ -6,6 +6,11 @@
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
+                <n-alert title="First time usage" type="warning">
+                  A self-signed certificate will be generated and added into trust store when enable this mod for the
+                  first time.
+                  Please accept the pop-up window otherwise this mod will not work.
+                </n-alert>
                 <n-switch
                   @update:value="handleServerToggle"
                   :loading="serverStarting"
@@ -169,7 +174,7 @@ export default defineComponent({
             proxy: this.proxyAddress,
             selectedServer: this.selectedServer
           }
-        })
+        });
       }
     },
     async checkProxy() {

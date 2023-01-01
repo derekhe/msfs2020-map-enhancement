@@ -1,0 +1,1 @@
+mkcert -install -key-file key.pem -cert-file cert.pem kh.ssl.ak.tiles.virtualearth.net khstorelive.azureedge.net *.virtualearth.net *.azureedge.net
