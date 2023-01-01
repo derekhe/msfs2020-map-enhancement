@@ -46,7 +46,7 @@
                     v-model:value="proxyAddress"
                     type="text"
                     placeholder="http://ipaddress:port"
-                    @change="updateStore"
+                    @change="updateConfig"
                   />
                   <n-button @click="checkProxy" v-model:loading="proxyChecking">
                     Test Proxy
@@ -64,7 +64,7 @@
               <n-radio-group
                 v-model:value="selectedServer"
                 name="radiogroup"
-                @change="updateStore"
+                @change="updateConfig"
               >
                 <n-space>
                   <n-radio
@@ -159,9 +159,18 @@ export default defineComponent({
         });
       }
     },
-    updateStore() {
+    async updateConfig() {
       store.set("proxyAddress", this.proxyAddress);
       store.set("selectedServer", this.selectedServer);
+
+      if (this.serverStarted) {
+        await got.post("http://localhost:39871/configs", {
+          json: {
+            proxy: this.proxyAddress,
+            selectedServer: this.selectedServer
+          }
+        })
+      }
     },
     async checkProxy() {
       const url = `https://khm.google.com/kh/v=908?x=1&y=1&z=1`;

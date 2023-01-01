@@ -39,7 +39,8 @@ console.log(selectedServer, proxy);
 
 router.post("/configs", (ctx, next) => {
   proxy = ctx.request.body.proxy;
-  console.log(`get proxy config ${proxy}`);
+  selectedServer = ctx.request.body.selectedServer;
+  console.log(`get proxy config ${JSON.stringify(ctx.request.body)}`);
   ctx.response.status = 200;
 });
 
@@ -48,11 +49,19 @@ router.get("/health", (ctx, next) => {
   ctx.response.status = 200;
 });
 
+const urlMapping = (server, tileX, tileY, levelOfDetail) => {
+  if (server.includes("mt"))
+    return `https://${server}/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+
+  if (server.includes("khm"))
+    return `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+};
+
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
-  const server = "khms.google.com";
-  const url = `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+
+  const url = urlMapping(selectedServer, tileX, tileY, levelOfDetail);
 
   let options = {
     timeout: {
