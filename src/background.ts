@@ -7,7 +7,7 @@ import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 
 import { addCertificate, removeCertificate } from "@/services/certificate";
 import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
-import { startMapServer, stopMapServer } from "@/services/mapServer";
+import { startMapServer, stopNginxServer } from "@/services/mapServer";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import log from "electron-log";
@@ -49,9 +49,15 @@ async function createWindow() {
 }
 
 // Quit when all windows are closed.
-app.on("window-all-closed", () => {
+app.on("window-all-closed", async () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
+  try {
+    await StopServer();
+  } catch (e) {
+    //Ignore any error
+  }
+
   if (process.platform !== "darwin") {
     app.quit();
   }
@@ -97,6 +103,12 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   const { proxyAddress, selectedServer } = arg;
 
   try {
+    await stopNginxServer();
+  } catch (e) {
+    //ignore
+  }
+
+  try {
     await addCertificate();
     patchHostsFile();
     await startMapServer(proxyAddress, selectedServer);
@@ -110,9 +122,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
 
 ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
   try {
-    await removeCertificate();
-    unpatchHostsFile();
-    await stopMapServer();
+    await StopServer();
     log.info("Stop server success");
     return { success: true };
   } catch (e) {
@@ -120,3 +130,9 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
     return { success: false, error: e };
   }
 });
+
+async function StopServer() {
+  await removeCertificate();
+  unpatchHostsFile();
+  await stopNginxServer();
+}

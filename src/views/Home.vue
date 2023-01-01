@@ -14,9 +14,22 @@
                   <template #checked>Back to Bing Map</template>
                   <template #unchecked>Inject Google Map</template>
                 </n-switch>
-                <n-alert title="Health Check" type="success" v-if="healthCheckResult === 'passed'">Passed</n-alert>
-                <n-alert title="Health Check" type="info" v-if="healthCheckResult === 'checking'">Checking</n-alert>
-                <n-alert title="Health Check" type="error" v-if="healthCheckResult === 'failed'">Failed</n-alert>
+                <n-alert title="Health Check" type="success"
+                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Passed && nginxServerHealthCheckResult ===HEALTH_CHECK.Passed">
+                  Passed
+                </n-alert>
+                <n-alert title="Health Check" type="info"
+                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Checking || nginxServerHealthCheckResult ===HEALTH_CHECK.Checking">
+                  Checking
+                </n-alert>
+                <n-alert title="Health Check" type="error"
+                         v-if="mockServerHealthCheckResult === HEALTH_CHECK.Failed">
+                  Mock Server Check Failed
+                </n-alert>
+                <n-alert title="Health Check" type="error"
+                         v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Failed">
+                  Nginx Server Check Failed
+                </n-alert>
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="the beatles" tab="Proxy Settings">
@@ -70,6 +83,7 @@ import { HttpsProxyAgent } from "hpagent";
 
 const store = new Store();
 import { useMessage } from "naive-ui";
+import { HEALTH_CHECK } from "@/consts/constants";
 
 export default defineComponent({
   name: "Home",
@@ -81,7 +95,9 @@ export default defineComponent({
       proxyTesting: false,
       serverStarting: false,
       serverStarted: false,
-      healthCheckResult: null
+      mockServerHealthCheckResult: null,
+      nginxServerHealthCheckResult: null,
+      HEALTH_CHECK: HEALTH_CHECK
     };
   },
   setup() {
@@ -89,7 +105,8 @@ export default defineComponent({
   },
   methods: {
     async handleServerToggle(value) {
-      this.healthCheckResult = "checking";
+      this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
+      this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
       this.serverStarting = true;
 
       if (value) {
@@ -102,7 +119,8 @@ export default defineComponent({
             this.serverStarting = false;
             if (result.success) {
               this.serverStarted = true;
-              setTimeout(await this.healthCheck, 10 * 1000);
+              setTimeout(await this.checkMockServer, 10 * 1000);
+              setTimeout(await this.checkNginxServer, 10 * 1000);
             } else {
               window.$message.error(
                 "Start server failed, error: " + result.error
@@ -111,6 +129,8 @@ export default defineComponent({
             }
           });
       } else {
+        this.mockServerHealthCheckResult = HEALTH_CHECK.NotStarted;
+        this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
           this.serverStarting = false;
           if (!result.success) {
@@ -155,8 +175,7 @@ export default defineComponent({
         this.proxyTesting = false;
       }
     },
-    async healthCheck() {
-      console.log("Health Checking");
+    async checkMockServer() {
       const url = `https://kh.ssl.ak.tiles.virtualearth.net/health`;
 
       let options = {
@@ -171,15 +190,40 @@ export default defineComponent({
         console.log(resp.statusCode, resp.body);
 
         if (resp.statusCode === 200 && resp.body === "alive") {
-          this.healthCheckResult = "passed";
+          this.mockServerHealthCheckResult = HEALTH_CHECK.Passed;
         } else {
-          this.healthCheckResult = "failed";
+          this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
         }
       } catch (ex) {
         console.error(ex);
-        this.healthCheckResult = "failed";
+        this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
+      }
+    },
+    async checkNginxServer() {
+      const url = "https://khstorelive.azureedge.net/results/v1.20.0/coverage_maps/lod_8/12202100.cov?version=3";
+
+      let options = {
+        timeout: {
+          request: 15 * 1000
+        },
+        rejectUnauthorized: false
+      };
+
+      try {
+        await got(url, options);
+      } catch (ex) {
+        if (ex instanceof got.HTTPError) {
+          if (ex.response.statusCode === 404) {
+            this.nginxServerHealthCheckResult = HEALTH_CHECK.Passed;
+          } else {
+            this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
+          }
+        } else {
+          this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
+        }
       }
     }
+
   }
 });
 </script>

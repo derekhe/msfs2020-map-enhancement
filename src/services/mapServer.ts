@@ -44,11 +44,13 @@ export async function startMapServer(
   log.info("Started nginx server");
 }
 
-export async function stopMapServer(): Promise<void> {
+export async function stopNginxServer(): Promise<void> {
   log.info("Stopping nginx server");
-  await execAsync("./nginx.exe", ["-s", "stop"], {
-    cwd: path.join(__dirname, "../extra/nginx"),
-  });
+
+  await execAsync("taskkill", ["/F", "/IM", "nginx.exe"], {
+    shell:true,
+  })
 
   serverProcess.kill();
 }
+
