@@ -19,7 +19,9 @@ export async function startMapServer(
   if (isDevelopment) {
     log.info("Starting koa server in dev env");
     serverProcess = fork("extra/server/server.js", [
+      "--proxyAddress",
       proxyAddress,
+      "--selectedServer",
       selectedServer,
     ]);
     log.info("Started koa server in dev env");
