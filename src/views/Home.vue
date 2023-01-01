@@ -4,7 +4,7 @@
       <n-layout-content>
         <n-card title="MSFS2020 Map Enhancement" style="margin-bottom: 16px">
           <n-tabs type="line">
-            <n-tab-pane name="oasis" tab="Mod Control">
+            <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
                 <n-switch
                   @update:value="handleServerToggle"
@@ -30,26 +30,37 @@
                          v-if="nginxServerHealthCheckResult === HEALTH_CHECK.Failed">
                   Nginx Server Check Failed
                 </n-alert>
+                <n-alert title="Proxy" type="error" v-if="proxyTestResult === HEALTH_CHECK.Failed">
+                  Can't access google, please check your proxy setting
+                </n-alert>
               </n-space>
             </n-tab-pane>
-            <n-tab-pane name="the beatles" tab="Proxy Settings">
-              <n-p>
-                If you need proxy to access google, please fill the proxy
-                address. Format http://ipaddress:port
-              </n-p>
-              <n-space>
-                <n-input
-                  v-model:value="proxyAddress"
-                  type="text"
-                  placeholder="http://ipaddress:port"
-                  @change="updateStore"
-                />
-                <n-button @click="testProxy" v-model:loading="proxyTesting">
-                  Test Proxy
-                </n-button>
+            <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
+              <n-space vertical>
+                <n-p>
+                  If you need proxy to access google, please fill the proxy
+                  address. Format http://ipaddress:port
+                </n-p>
+                <n-space>
+                  <n-input
+                    v-model:value="proxyAddress"
+                    type="text"
+                    placeholder="http://ipaddress:port"
+                    @change="updateStore"
+                  />
+                  <n-button @click="checkProxy" v-model:loading="proxyChecking">
+                    Test Proxy
+                  </n-button>
+                </n-space>
+                <n-alert title="Proxy" type="info" v-if="proxyTestResult === HEALTH_CHECK.Passed">
+                  Proxy check passed
+                </n-alert>
+                <n-alert title="Proxy" type="error" v-if="proxyTestResult === HEALTH_CHECK.Failed">
+                  Can't access google, please check your proxy setting
+                </n-alert>
               </n-space>
             </n-tab-pane>
-            <n-tab-pane name="jay chou" tab="Map Server">
+            <n-tab-pane name="Map Server" tab="Map Server">
               <n-radio-group
                 v-model:value="selectedServer"
                 name="radiogroup"
@@ -92,21 +103,29 @@ export default defineComponent({
       googleServers: ["mt.google.com", "khm.google.com"],
       selectedServer: store.get("selectedServer", "mt.google.com"),
       proxyAddress: store.get("proxyAddress", null),
-      proxyTesting: false,
       serverStarting: false,
       serverStarted: false,
       mockServerHealthCheckResult: null,
       nginxServerHealthCheckResult: null,
+      proxyTestResult: null,
       HEALTH_CHECK: HEALTH_CHECK
     };
   },
   setup() {
     window.$message = useMessage();
   },
+  computed: {
+    proxyChecking: {
+      get() {
+        return this.proxyTestResult === HEALTH_CHECK.Checking;
+      }
+    }
+  },
   methods: {
     async handleServerToggle(value) {
       this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
       this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
+      this.proxyTestResult = HEALTH_CHECK.Checking;
       this.serverStarting = true;
 
       if (value) {
@@ -121,6 +140,7 @@ export default defineComponent({
               this.serverStarted = true;
               setTimeout(await this.checkMockServer, 10 * 1000);
               setTimeout(await this.checkNginxServer, 10 * 1000);
+              setTimeout(await this.checkProxy, 10 * 1000);
             } else {
               window.$message.error(
                 "Start server failed, error: " + result.error
@@ -143,7 +163,7 @@ export default defineComponent({
       store.set("proxyAddress", this.proxyAddress);
       store.set("selectedServer", this.selectedServer);
     },
-    async testProxy() {
+    async checkProxy() {
       const url = `https://khm.google.com/kh/v=908?x=1&y=1&z=1`;
 
       let options = {
@@ -161,18 +181,16 @@ export default defineComponent({
         }
       };
       try {
-        this.proxyTesting = true;
+        this.proxyTestResult = HEALTH_CHECK.Checking;
         const resp = await got(url, options);
 
         if (resp.statusCode === 200) {
-          window.$message.info("Proxy test passed");
+          this.proxyTestResult = HEALTH_CHECK.Passed;
         } else {
-          window.$message.error("Proxy test failed");
+          this.proxyTestResult = HEALTH_CHECK.Failed;
         }
       } catch (ex) {
-        window.$message.error("Proxy test failed");
-      } finally {
-        this.proxyTesting = false;
+        this.proxyTestResult = HEALTH_CHECK.Failed;
       }
     },
     async checkMockServer() {
