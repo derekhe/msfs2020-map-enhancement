@@ -1,16 +1,6 @@
 module.exports = {
   pluginOptions: {
     electronBuilder: {
-      externals: [
-        "koa",
-        "koa-router",
-        "koa-logger",
-        "koa-bodyparser",
-        "got",
-        "hpagent",
-        "sharp",
-        "minimist",
-      ],
       nodeIntegration: true,
       builderOptions: {
         extraResources: ["./extra/**", "./extra/nginx/temp/**"],
