@@ -27,10 +27,13 @@ export async function startMapServer(
     log.info("Started koa server in dev env");
   } else {
     log.info("Starting koa server in prod env");
-    serverProcess = fork("./server.js", [], {
-      cwd: path.join(__dirname, "../extra/server"),
-      execArgv: [proxyAddress, selectedServer],
-    });
+    serverProcess = fork(
+      "./server.js",
+      ["--proxyAddress", proxyAddress, "--selectedServer", selectedServer],
+      {
+        cwd: path.join(__dirname, "../extra/server"),
+      }
+    );
     log.info("Started koa server in prod env");
   }
 
@@ -50,8 +53,8 @@ export async function stopNginxServer(): Promise<void> {
   log.info("Stopping nginx server");
 
   await execAsync("taskkill", ["/F", "/IM", "nginx.exe"], {
-    shell:true,
-  })
+    shell: true,
+  });
 
   serverProcess.kill();
 }

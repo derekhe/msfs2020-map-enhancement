@@ -27,3 +27,5 @@ pnpm-debug.log*
 /extra/nginx/logs/*.log
 /extra/nginx/logs/*.pid
 /extra/nginx/temp/*temp
+/extra/nginx/cert.pem
+/extra/nginx/key.pem
