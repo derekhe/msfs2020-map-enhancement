@@ -128,12 +128,13 @@ export default defineComponent({
   },
   methods: {
     async handleServerToggle(value) {
-      this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
-      this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
-      this.proxyTestResult = HEALTH_CHECK.Checking;
       this.serverStarting = true;
 
       if (value) {
+        this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
+        this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
+        this.proxyTestResult = HEALTH_CHECK.Checking;
+
         window.ipcRenderer
           .invoke(EVENT_START_SERVER, {
             proxyAddress: this.proxyAddress,
@@ -156,6 +157,7 @@ export default defineComponent({
       } else {
         this.mockServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
+        this.proxyTestResult = HEALTH_CHECK.NotStarted;
         window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
           this.serverStarting = false;
           if (!result.success) {

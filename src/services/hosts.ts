@@ -19,8 +19,10 @@ export function unpatchHostsFile(): void {
     .readFileSync("C:\\windows\\system32\\drivers\\etc\\hosts")
     .toString();
   hosts = hosts
-    .replace("127.0.0.1 kh.ssl.ak.tiles.virtualearth.net\n", "")
-    .replace("127.0.0.1 khstorelive.azureedge.net\n", "")
-    .replace("\n\n", "\n");
+    .replaceAll("127.0.0.1 kh.ssl.ak.tiles.virtualearth.net\n", "")
+    .replaceAll("127.0.0.1 khstorelive.azureedge.net\n", "")
+    .replaceAll("\n\n", "\n");
+
+  log.info(hosts)
   fs.writeFileSync("C:\\windows\\system32\\drivers\\etc\\hosts", hosts);
 }
