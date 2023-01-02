@@ -9,6 +9,7 @@ module.exports = {
         win: {
           target: "nsis",
           requestedExecutionLevel: "requireAdministrator",
+          icon: "./public/icon.png"
         },
         nsis: {
           guid: "6fd47695-9ae0-492c-a3a2-db9be0a547d4",
