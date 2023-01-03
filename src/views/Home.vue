@@ -1,6 +1,6 @@
 <template>
   <n-message-provider>
-    <n-layout content-style="padding: 24px;">
+    <n-layout content-style="padding: 24px;" style="height: 100%">
       <n-layout-content>
         <n-card title="MSFS2020 Map Enhancement" style="margin-bottom: 16px">
           <n-tabs type="line">
@@ -85,7 +85,18 @@
           </n-tabs>
         </n-card>
       </n-layout-content>
-      <n-layout-footer></n-layout-footer>
+      <n-layout-footer
+        bordered
+        position="absolute" style="padding: 10px"
+      >
+        <n-space>
+          <n-p>Author: He Sicong</n-p>
+          <a href="https://github.com/derekhe/msfs2020-google-map-electron">Home Page</a>
+          <a href="https://zh.flightsim.to/file/19345/msfs-2020-google-map-replacement">Discussion</a>
+          <a href="https://github.com/derekhe/msfs2020-google-map/issues">Report Issue</a>
+          <a href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US" target="_blank">Donate</a>
+        </n-space>
+      </n-layout-footer>
     </n-layout>
   </n-message-provider>
 </template>
@@ -133,7 +144,6 @@ export default defineComponent({
       if (value) {
         this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
-        this.proxyTestResult = HEALTH_CHECK.Checking;
 
         window.ipcRenderer
           .invoke(EVENT_START_SERVER, {
@@ -146,7 +156,10 @@ export default defineComponent({
               this.serverStarted = true;
               setTimeout(await this.checkMockServer, 10 * 1000);
               setTimeout(await this.checkNginxServer, 10 * 1000);
-              setTimeout(await this.checkProxy, 10 * 1000);
+              if (this.proxyAddress) {
+                this.proxyTestResult = HEALTH_CHECK.Checking;
+                setTimeout(await this.checkProxy, 10 * 1000);
+              }
             } else {
               window.$message.error(
                 "Start server failed, error: " + result.error
@@ -184,7 +197,7 @@ export default defineComponent({
 
       let options = {
         timeout: {
-          request: 5 * 1000,
+          request: 5 * 1000
         },
         agent: this.proxyAddress ? {
           https: new HttpsProxyAgent({
