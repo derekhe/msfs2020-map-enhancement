@@ -7,7 +7,8 @@
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
                 <n-alert title="First time usage" type="warning" closable>
-                  A self-signed certificate will be generated and added into trust store when you enable this mod for the
+                  A self-signed certificate will be generated and added into trust store when you enable this mod for
+                  the
                   first time.
                   Please accept the pop-up window otherwise this mod will not work.
                 </n-alert>
@@ -119,9 +120,13 @@ import got from "got";
 import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
 
+import log from "electron-log";
+
 const store = new Store();
 import { useMessage } from "naive-ui";
 import { HEALTH_CHECK } from "@/consts/constants";
+
+const messageOptions = {keepAliveOnHover: true, closable: true}
 
 export default defineComponent({
   name: "Home",
@@ -153,6 +158,7 @@ export default defineComponent({
       this.serverStarting = true;
 
       if (value) {
+        log.info("Starting mod");
         this.mockServerHealthCheckResult = HEALTH_CHECK.Checking;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
 
@@ -162,6 +168,7 @@ export default defineComponent({
             selectedServer: this.selectedServer
           })
           .then(async (result) => {
+            log.info("Start mod result", result);
             this.serverStarting = false;
             if (result.success) {
               this.serverStarted = true;
@@ -173,24 +180,28 @@ export default defineComponent({
               }
             } else {
               window.$message.error(
-                "Start server failed, error: " + result.error
+                "Start server failed, error: " + result.error, messageOptions
               );
+              log.info("Start mod failed", result.error);
               this.serverStarted = false;
             }
           });
       } else {
+        log.info("Stopping mod");
         this.mockServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.proxyTestResult = HEALTH_CHECK.NotStarted;
         window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
           this.serverStarting = false;
           if (!result.success) {
-            window.$message.error("Stop server failed, error: " + result.error);
+            window.$message.error("Stop server failed, error: " + result.error, messageOptions);
+            log.info("Stop mod failed, error", result.error);
           }
         });
       }
     },
     async updateConfig() {
+      log.info("Updating config", this.proxyAddress, this.selectedServer);
       store.set("proxyAddress", this.proxyAddress);
       store.set("selectedServer", this.selectedServer);
 
@@ -202,8 +213,11 @@ export default defineComponent({
           }
         });
       }
+
+      log.info("Updated config");
     },
     async checkProxy() {
+      log.info("Checking proxy", this.proxyAddress);
       const url = `https://khm.google.com/kh/v=908?x=1&y=1&z=1`;
 
       let options = {
@@ -225,12 +239,14 @@ export default defineComponent({
         this.proxyTestResult = HEALTH_CHECK.Checking;
         const resp = await got(url, options);
 
+        log.info("Check proxy result", resp.statusCode);
         if (resp.statusCode === 200) {
           this.proxyTestResult = HEALTH_CHECK.Passed;
         } else {
           this.proxyTestResult = HEALTH_CHECK.Failed;
         }
       } catch (ex) {
+        log.info("Check proxy failed", ex);
         this.proxyTestResult = HEALTH_CHECK.Failed;
       }
     },
@@ -244,9 +260,10 @@ export default defineComponent({
         rejectUnauthorized: false
       };
       try {
+        log.info("Checking mock server");
         const resp = await got(url, options);
 
-        console.log(resp.statusCode, resp.body);
+        log.info("Mock server response", resp.statusCode, resp.body);
 
         if (resp.statusCode === 200 && resp.body === "alive") {
           this.mockServerHealthCheckResult = HEALTH_CHECK.Passed;
@@ -254,7 +271,7 @@ export default defineComponent({
           this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
         }
       } catch (ex) {
-        console.error(ex);
+        log.error(ex);
         this.mockServerHealthCheckResult = HEALTH_CHECK.Failed;
       }
     },
@@ -269,10 +286,14 @@ export default defineComponent({
       };
 
       try {
+        log.info("Checking nginx server");
         await got(url, options);
       } catch (ex) {
+
         if (ex instanceof got.HTTPError) {
+          log.info("Nginx server check result", ex.response.statusCode);
           if (ex.response.statusCode === 404) {
+            log.info("Nginx server check passed");
             this.nginxServerHealthCheckResult = HEALTH_CHECK.Passed;
           } else {
             this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
@@ -282,7 +303,6 @@ export default defineComponent({
         }
       }
     }
-
   }
 });
 </script>

@@ -8,10 +8,12 @@ const execAsync = util.promisify(execFile);
 const isDevelopment = process.env.NODE_ENV !== "production";
 let serverProcess: ChildProcess;
 
+
 export async function startMapServer(
   proxyAddress: string,
   selectedServer: string
 ): Promise<void> {
+  log.info("Starting map server")
   if (serverProcess) {
     serverProcess.kill();
   }
@@ -43,7 +45,7 @@ export async function startMapServer(
   });
 
   nginxProcess.on("error", (err) => {
-    console.error("Failed to start nginx", err);
+    log.error("Failed to start nginx", err);
   });
 
   log.info("Started nginx server");
