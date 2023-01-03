@@ -14,8 +14,10 @@ const argv = require("minimist")(process.argv.slice(2));
 
 let proxyAddress = argv["proxyAddress"];
 let selectedServer = argv["selectedServer"];
+let log = require("electron-log");
+log.transports.file.getFile();
 
-console.log(argv);
+log.info("Starting mock server, arguments:", argv);
 
 const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
@@ -43,11 +45,12 @@ const quadKeyToTileXY = function (quadKey) {
 router.post("/configs", (ctx, next) => {
   proxyAddress = ctx.request.body.proxy;
   selectedServer = ctx.request.body.selectedServer;
-  console.log(`get proxy config ${JSON.stringify(ctx.request.body)}`);
+  log.info(`get proxy config ${JSON.stringify(ctx.request.body)}`);
   ctx.response.status = 200;
 });
 
 router.get("/health", (ctx, next) => {
+  log.info("Received health check")
   ctx.response.body = "alive";
   ctx.response.status = 200;
 });
@@ -62,6 +65,7 @@ const urlMapping = (server, tileX, tileY, levelOfDetail) => {
 
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
+  log.info("Requesting", quadKey )
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
   const url = urlMapping(selectedServer, tileX, tileY, levelOfDetail);
