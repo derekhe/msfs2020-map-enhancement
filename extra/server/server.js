@@ -64,7 +64,6 @@ const urlMapping = (server, tileX, tileY, levelOfDetail) => {
 
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
-  log.info("Requesting", quadKey )
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
   const url = urlMapping(selectedServer, tileX, tileY, levelOfDetail);
@@ -87,7 +86,7 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
         : undefined,
   };
 
-  console.log(url, proxyAddress);
+  log.info("Downloading", url, proxyAddress);
 
   const resp = await got(url, options).buffer();
 

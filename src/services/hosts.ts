@@ -21,7 +21,8 @@ export function unpatchHostsFile(): void {
     .toString();
   hosts = hosts
     .replaceAll("127.0.0.1 kh.ssl.ak.tiles.virtualearth.net\r\n", "")
-    .replaceAll("127.0.0.1 khstorelive.azureedge.net\r\n", "");
+    .replaceAll("127.0.0.1 khstorelive.azureedge.net\r\n", "")
+    .replace(/^\s*\n/gm, "");
 
   fs.writeFileSync("C:\\windows\\system32\\drivers\\etc\\hosts", hosts);
   log.info("Hosts unpatched", hosts);
