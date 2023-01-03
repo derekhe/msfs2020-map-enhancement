@@ -18,6 +18,14 @@ let log = require("electron-log");
 
 log.info("Starting mock server, arguments:", argv);
 
+const statics = {
+  numOfImageLoaded: 0,
+  lastLoadingImageUrl: 0,
+  lastLoadTime: 0,
+};
+
+let lastLoadedImage = null;
+
 const quadKeyToTileXY = function (quadKey) {
   let tileX = 0;
   let tileY = 0;
@@ -48,8 +56,18 @@ router.post("/configs", (ctx, next) => {
   ctx.response.status = 200;
 });
 
+router.get("/last-image", (ctx, next) => {
+  ctx.response.set("Content-Type", "image/jpeg");
+  ctx.response.status = 200;
+  ctx.body = lastLoadedImage;
+});
+
+router.get("/statics", (ctx, next) => {
+  ctx.body = statics;
+});
+
 router.get("/health", (ctx, next) => {
-  log.info("Received health check")
+  log.info("Received health check");
   ctx.response.body = "alive";
   ctx.response.status = 200;
 });
@@ -72,18 +90,17 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
     timeout: {
       request: 15 * 1000,
     },
-    agent:
-      proxyAddress
-        ? {
-            https: new HttpsProxyAgent({
-              keepAlive: false,
-              maxSockets: 128,
-              maxFreeSockets: 128,
-              scheduling: "fifo",
-              proxy: proxyAddress,
-            }),
-          }
-        : undefined,
+    agent: proxyAddress
+      ? {
+          https: new HttpsProxyAgent({
+            keepAlive: false,
+            maxSockets: 128,
+            maxFreeSockets: 128,
+            scheduling: "fifo",
+            proxy: proxyAddress,
+          }),
+        }
+      : undefined,
   };
 
   log.info("Downloading", url, proxyAddress);
@@ -101,11 +118,17 @@ router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   ctx.response.set("X-VE-TILEMETA-CaptureDatesRang", "1/1/1999-12/31/2003");
   ctx.response.set("X-VE-TILEMETA-CaptureDateMaxYY", "0312");
   ctx.response.set("X-VE-TILEMETA-Product-IDs", "209");
-  ctx.body = await sharp(resp)
+  let image = await sharp(resp)
     .modulate({
       lightness: -5,
     })
     .toBuffer();
+  ctx.body = image;
+
+  lastLoadedImage = image;
+  statics.numOfImageLoaded += 1;
+  statics.lastLoadingImageUrl = url;
+  statics.lastLoadTime = new Date();
 });
 
 app
