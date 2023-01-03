@@ -15,7 +15,6 @@ const argv = require("minimist")(process.argv.slice(2));
 let proxyAddress = argv["proxyAddress"];
 let selectedServer = argv["selectedServer"];
 let log = require("electron-log");
-log.transports.file.getFile();
 
 log.info("Starting mock server, arguments:", argv);
 

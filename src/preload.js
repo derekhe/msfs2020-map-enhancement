@@ -1,3 +1,3 @@
-import { ipcRenderer } from "electron";
+import { ipcRenderer} from "electron";
 
 window.ipcRenderer = ipcRenderer;

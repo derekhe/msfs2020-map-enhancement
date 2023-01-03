@@ -53,7 +53,7 @@ app.on("window-all-closed", async () => {
   try {
     await StopServer();
   } catch (e) {
-    log.info("WIndow closing, error", e);
+    log.info("Window closing, error", e);
   }
 
   if (process.platform !== "darwin") {

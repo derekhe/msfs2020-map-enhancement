@@ -137,12 +137,12 @@ import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
 import { CheckmarkCircle, CloseCircle } from "@vicons/ionicons5";
 
-
 import log from "electron-log";
 
 const store = new Store();
 import { useMessage } from "naive-ui";
 import { HEALTH_CHECK } from "@/consts/constants";
+
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 

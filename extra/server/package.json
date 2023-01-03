@@ -1,6 +1,5 @@
 {
-  "name": "msfs2020-electron",
-  "version": "0.1.1",
+  "name": "msfs2020-map-enhancement",
   "main": "background.js",
   "dependencies": {
     "electron-log": "^4.4.4",
