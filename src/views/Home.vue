@@ -12,7 +12,7 @@
                   first time.
                   Please accept the pop-up window otherwise this mod will not work.
                 </n-alert>
-                <n-alert title="Important" type="warning">
+                <n-alert title="Important" type="warning" v-if="!serverStarted">
                   <n-ul>
                     <n-li>Run this mod before MSFS2020, otherwise default bing map may appear randomly</n-li>
                     <n-li>If you enable rolling cache in game, please clear it before enable this mode</n-li>
@@ -132,7 +132,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import { EVENT_CHECK_PROXY, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
@@ -174,6 +174,7 @@ export default defineComponent({
   },
   setup() {
     window.$message = useMessage();
+
   },
   computed: {
     proxyChecking: {
@@ -181,6 +182,9 @@ export default defineComponent({
         return this.proxyTestResult === HEALTH_CHECK.Checking;
       }
     }
+  },
+  async mounted() {
+    setTimeout(await this.check443Port, 3000);
   },
   methods: {
     async handleServerToggle(value) {
@@ -191,40 +195,38 @@ export default defineComponent({
         this.imageAccessHealthCheckResult = HEALTH_CHECK.Checking;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
 
-        window.ipcRenderer
+        const result = await window.ipcRenderer
           .invoke(EVENT_START_SERVER, {
             proxyAddress: this.proxyAddress,
             selectedServer: this.selectedServer
-          })
-          .then(async (result) => {
-            log.info("Start mod result", result);
-            this.serverStarting = false;
-            if (result.success) {
-              this.firstTime = false;
-              store.set("firstTime", this.firstTime);
-              this.serverStarted = true;
-              setTimeout(await this.checkImageAccess, 10 * 1000);
-              setTimeout(await this.checkNginxServer, 10 * 1000);
-            } else {
-              window.$message.error(
-                "Start server failed, error: " + result.error, messageOptions
-              );
-              log.info("Start mod failed", result.error);
-              this.serverStarted = false;
-            }
           });
+
+        log.info("Start mod result", result);
+        this.serverStarting = false;
+        if (result.success) {
+          this.firstTime = false;
+          store.set("firstTime", this.firstTime);
+          this.serverStarted = true;
+          setTimeout(await this.checkImageAccess, 10 * 1000);
+          setTimeout(await this.checkNginxServer, 10 * 1000);
+        } else {
+          window.$message.error(
+            "Start server failed, error: " + result.error, messageOptions
+          );
+          log.info("Start mod failed", result.error);
+          this.serverStarted = false;
+        }
       } else {
         log.info("Stopping mod");
         this.imageAccessHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.nginxServerHealthCheckResult = HEALTH_CHECK.NotStarted;
         this.proxyTestResult = HEALTH_CHECK.NotStarted;
-        window.ipcRenderer.invoke(EVENT_STOP_SERVER).then((result) => {
-          this.serverStarting = false;
-          if (!result.success) {
-            window.$message.error("Stop server failed, error: " + result.error, messageOptions);
-            log.info("Stop mod failed, error", result.error);
-          }
-        });
+        const result = await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
+        this.serverStarting = false;
+        if (!result.success) {
+          window.$message.error("Stop server failed, error: " + result.error, messageOptions);
+          log.info("Stop mod failed, error", result.error);
+        }
       }
     },
     async updateConfig() {
@@ -334,6 +336,12 @@ export default defineComponent({
       store.clear();
       await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
       window.$message.warning("Please restart to take effect");
+    },
+    async check443Port() {
+      const result = await window.ipcRenderer.invoke(EVENT_CHECK_PROXY);
+      if (result) {
+        window.$message.error("443 Port is using, the mod won't work. Please close any application using 443 port. Look at the FAQ page here: https://github.com/derekhe/msfs2020-google-map/wiki/FAQ#443-port-is-occupied", messageOptions);
+      }
     }
   }
 });
