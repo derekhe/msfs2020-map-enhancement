@@ -4,7 +4,8 @@ import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
 import {
-  EVENT_CHECK_PROXY,
+  EVENT_CHECK_PORT,
+  EVENT_CHECK_UPDATE,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER,
 } from "@/consts/custom-events";
@@ -44,9 +45,9 @@ async function createWindow() {
     },
   });
 
-  win.webContents.on('new-window', function(e, url) {
+  win.webContents.on("new-window", function (e, url) {
     e.preventDefault();
-    require('electron').shell.openExternal(url);
+    require("electron").shell.openExternal(url);
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -55,7 +56,6 @@ async function createWindow() {
   } else {
     createProtocol("app");
     win.loadURL("app://./index.html");
-    autoUpdater.checkForUpdatesAndNotify();
   }
 }
 
@@ -83,7 +83,7 @@ app.on("ready", async () => {
       log.error("Vue Devtools failed to install:", e.toString());
     }
   }
-  createWindow();
+  await createWindow();
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -136,11 +136,16 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
   }
 });
 
-ipcMain.handle(EVENT_CHECK_PROXY, async () => {
+ipcMain.handle(EVENT_CHECK_PORT, async () => {
   const tcpPortUsed = require("tcp-port-used");
   const result = await tcpPortUsed.check(443, "127.0.0.1");
   log.info("443 is in use:", result);
   return result;
+});
+
+ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
+  let updateCheckResult = await autoUpdater.checkForUpdates();
+  return updateCheckResult.updateInfo;
 });
 
 async function StopServer() {
