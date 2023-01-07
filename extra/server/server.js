@@ -50,8 +50,14 @@ const quadKeyToTileXY = function (quadKey) {
 };
 
 router.post("/configs", (ctx, next) => {
-  proxyAddress = ctx.request.body.proxy;
-  selectedServer = ctx.request.body.selectedServer;
+  if (ctx.request.body.proxy) {
+    proxyAddress = ctx.request.body.proxy;
+  }
+
+  if (ctx.request.body.selectedServer) {
+    selectedServer = ctx.request.body.selectedServer;
+  }
+
   log.info(`get proxy config ${JSON.stringify(ctx.request.body)}`);
   ctx.response.status = 200;
 });
