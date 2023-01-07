@@ -400,7 +400,7 @@ export default defineComponent({
     async checkAppUpdate() {
       const updateCheckResult = await window.ipcRenderer.invoke(EVENT_CHECK_UPDATE);
       console.log(updateCheckResult);
-      this.updateAvailable = this.appVersion !== updateCheckResult.appVersion;
+      this.updateAvailable = this.appVersion !== updateCheckResult.version;
       if (!this.updateAvailable) {
         log.info("No update version");
         return;
