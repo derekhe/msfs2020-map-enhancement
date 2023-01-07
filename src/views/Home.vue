@@ -3,22 +3,11 @@
     <n-layout content-style="padding: 24px;" style="height: 100%">
       <n-layout-content>
         <n-card v-bind:title="'MSFS2020 Map Replacement v' + appVersion" style="margin-bottom: 16px">
-          <n-alert title="Update available" type="warning" closable v-if="updateAvailable">
-            <n-space vertical size="small">
-              <n-collapse>
-                <n-collapse-item v-bind:title="'New Version:' + updateInfo.releaseName" name="1">
-                  <n-p v-html="updateInfo.releaseNotes"></n-p>
-                  <a href="https://flightsim.to/file/19345/msfs-2020-google-map-replacement" target="_blank">Download
-                    and
-                    install from FlightSim.to</a>
-                </n-collapse-item>
-              </n-collapse>
-            </n-space>
-          </n-alert>
+          <UpdateNotification />
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
-                <FirstTime/>
+                <FirstTime />
                 <n-alert title="Important" type="warning" v-if="!serverStarted">
                   <n-ul>
                     <n-li>Run this mod before MSFS2020, otherwise default bing map may appear randomly</n-li>
@@ -150,9 +139,9 @@ import log from "electron-log";
 const store = new Store();
 import { useMessage } from "naive-ui";
 import { HEALTH_CHECK } from "@/consts/constants";
-import Footer from "../components/Footer";
+import Footer from "@/components/Footer";
 import FirstTime from "@/components/FirstTime";
-
+import UpdateNotification from "@/components/UpdateNotification";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -166,7 +155,8 @@ export default defineComponent({
     FirstTime,
     CheckmarkCircle,
     CloseCircle,
-    Footer
+    Footer,
+    UpdateNotification
   },
   data() {
     return {
@@ -186,9 +176,7 @@ export default defineComponent({
         lastLoadingImageUrl: 0,
         lastLoadTime: 0
       },
-      appVersion: window.require("electron").remote.app.getVersion(),
-      updateAvailable: false,
-      updateInfo: {}
+      appVersion: window.require("electron").remote.app.getVersion()
     };
   },
   setup() {
@@ -217,7 +205,6 @@ export default defineComponent({
       this.imageRnd = new Date();
     }, 100, 100);
     setInterval(await this.getStaticInfo, 1000, 1000);
-    setTimeout(await this.checkAppUpdate, 2000);
   },
   methods: {
     async handleServerToggle(value) {
@@ -384,16 +371,6 @@ export default defineComponent({
           request: 2 * 1000
         }
       }).json();
-    },
-    async checkAppUpdate() {
-      const updateCheckResult = await window.ipcRenderer.invoke(EVENT_CHECK_UPDATE);
-      console.log(updateCheckResult);
-      this.updateAvailable = this.appVersion !== updateCheckResult.version;
-      if (!this.updateAvailable) {
-        log.info("No update version");
-        return;
-      }
-      this.updateInfo = updateCheckResult;
     }
   }
 });
