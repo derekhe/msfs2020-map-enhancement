@@ -8,14 +8,7 @@
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
                 <FirstTime />
-                <n-alert title="Important" type="warning" v-if="!serverStarted">
-                  <n-ul>
-                    <n-li>Run this mod before MSFS2020, otherwise default bing map may appear randomly</n-li>
-                    <n-li>If you enable rolling cache in game, please clear it before enable this mode</n-li>
-                    <n-li>Setup proxy if your access to google is blocked</n-li>
-                    <n-li>Disable any firewall and antivirus if you have trouble</n-li>
-                  </n-ul>
-                </n-alert>
+                <Important v-if="!serverStarted" />
                 <n-switch
                   @update:value="handleServerToggle"
                   :loading="serverStarting"
@@ -128,7 +121,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { EVENT_CHECK_PORT, EVENT_CHECK_UPDATE, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
+import { EVENT_CHECK_PORT, EVENT_START_SERVER, EVENT_STOP_SERVER } from "@/consts/custom-events";
 import got from "got";
 import Store from "electron-store";
 import { HttpsProxyAgent } from "hpagent";
@@ -142,6 +135,7 @@ import { HEALTH_CHECK } from "@/consts/constants";
 import Footer from "@/components/Footer";
 import FirstTime from "@/components/FirstTime";
 import UpdateNotification from "@/components/UpdateNotification";
+import Important from "@/components/Important";
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
 
@@ -152,6 +146,7 @@ const getDirectory = (path) => {
 export default defineComponent({
   name: "Home",
   components: {
+    Important,
     FirstTime,
     CheckmarkCircle,
     CloseCircle,
