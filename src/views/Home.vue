@@ -18,12 +18,7 @@
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
               <n-space vertical size="large">
-                <n-alert title="First time usage" type="warning" closable v-if="firstTime">
-                  A self-signed certificate will be generated and added into trust store when you enable this mod for
-                  the
-                  first time.
-                  Please accept the pop-up window otherwise this mod will not work.
-                </n-alert>
+                <FirstTime/>
                 <n-alert title="Important" type="warning" v-if="!serverStarted">
                   <n-ul>
                     <n-li>Run this mod before MSFS2020, otherwise default bing map may appear randomly</n-li>
@@ -156,6 +151,7 @@ const store = new Store();
 import { useMessage } from "naive-ui";
 import { HEALTH_CHECK } from "@/consts/constants";
 import Footer from "../components/Footer";
+import FirstTime from "@/components/FirstTime";
 
 
 const messageOptions = { keepAliveOnHover: true, closable: true };
@@ -167,6 +163,7 @@ const getDirectory = (path) => {
 export default defineComponent({
   name: "Home",
   components: {
+    FirstTime,
     CheckmarkCircle,
     CloseCircle,
     Footer
@@ -183,7 +180,6 @@ export default defineComponent({
       proxyTestResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
       logDirectory: getDirectory(log.transports.file.getFile().path),
-      firstTime: store.get("firstTime", true),
       imageRnd: 0,
       statics: {
         numOfImageLoaded: 0,
