@@ -119,9 +119,6 @@ export default defineComponent({
   },
   async mounted() {
     setTimeout(await this.check443Port, 500);
-    setInterval(() => {
-      this.imageRnd = new Date();
-    }, 100, 100);
   },
   methods: {
     async handleServerToggle(value) {
