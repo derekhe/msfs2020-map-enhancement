@@ -1,14 +1,14 @@
 <template>
   <n-card bordered title="Runtime Info" size="small">
     <n-space vertical size="small">
-      <n-p>Image loaded {{ statics.numOfImageLoaded }}</n-p>
-      <n-p>Last loaded time {{ lastLoadTimeFormatted }}</n-p>
-      <n-p>Last loaded url {{ statics.lastLoadingImageUrl }}</n-p>
-      <n-p>Recent loaded image</n-p>
-      <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
       <n-tag type="warning">It is running now. If you like this mod, please help me improve it by <a
         href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US">donating</a>
       </n-tag>
+      <n-p>Image loaded: {{ statics.numOfImageLoaded }}</n-p>
+      <n-p>Last loaded time: {{ lastLoadTimeFormatted }}</n-p>
+      <n-p>Last loaded url: {{ statics.lastLoadingImageUrl }}</n-p>
+      <n-p>Recent loaded image</n-p>
+      <img v-bind:src=loadedImageUrl style="height: 128px; width: 128px" />
     </n-space>
   </n-card>
 </template>
