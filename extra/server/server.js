@@ -12,8 +12,11 @@ const router = new Router();
 
 const argv = require("minimist")(process.argv.slice(2));
 
-let proxyAddress = argv["proxyAddress"];
-let selectedServer = argv["selectedServer"];
+let configs = {
+  proxyAddress: argv["proxyAddress"],
+  selectedServer: argv["selectedServer"],
+};
+
 let log = require("electron-log");
 const moment = require("moment");
 
@@ -51,15 +54,8 @@ const quadKeyToTileXY = function (quadKey) {
 };
 
 router.post("/configs", (ctx, next) => {
-  if (ctx.request.body.proxy) {
-    proxyAddress = ctx.request.body.proxy;
-  }
-
-  if (ctx.request.body.selectedServer) {
-    selectedServer = ctx.request.body.selectedServer;
-  }
-
-  log.info(`get proxy config ${JSON.stringify(ctx.request.body)}`);
+  configs = { ...configs, ...ctx.request.body };
+  log.info(`new settings ${configs}`);
   ctx.response.status = 200;
 });
 
@@ -80,37 +76,42 @@ router.get("/health", (ctx, next) => {
 });
 
 const urlMapping = (server, tileX, tileY, levelOfDetail) => {
-  if (server === "mt.google.com")
-    return `https://${server}/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
-
-  if (server === "khm.google.com")
-    return `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+  switch (server) {
+    case "mt.google.com":
+      return `https://${server}/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+    case "khm.google.com":
+      return `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
+    case "ArcGIS":
+      return `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${levelOfDetail}/${tileY}/${tileX}`;
+    default:
+      throw "server unset, no url mapping";
+  }
 };
 
 router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey;
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
-  const url = urlMapping(selectedServer, tileX, tileY, levelOfDetail);
+  const url = urlMapping(configs.selectedServer, tileX, tileY, levelOfDetail);
 
   let options = {
     timeout: {
       request: 15 * 1000,
     },
-    agent: proxyAddress
+    agent: configs.proxyAddress
       ? {
           https: new HttpsProxyAgent({
             keepAlive: false,
             maxSockets: 128,
             maxFreeSockets: 128,
             scheduling: "fifo",
-            proxy: proxyAddress,
+            proxy: configs.proxyAddress,
           }),
         }
       : undefined,
   };
 
-  log.info("Downloading", url, proxyAddress);
+  log.info("Downloading", url, configs.proxyAddress);
 
   const resp = await got(url, options).buffer();
 
