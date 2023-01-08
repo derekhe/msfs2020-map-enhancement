@@ -31,6 +31,7 @@
     "koa-logger": "^3.2.1",
     "koa-router": "^10.1.1",
     "minimist": "^1.2.5",
+    "moment": "^2.29.1",
     "sharp": "^0.29.3",
     "tcp-port-used": "^1.0.2",
     "vue": "^3.0.0",
