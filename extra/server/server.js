@@ -80,10 +80,10 @@ router.get("/health", (ctx, next) => {
 });
 
 const urlMapping = (server, tileX, tileY, levelOfDetail) => {
-  if (server.includes("mt"))
+  if (server === "mt.google.com")
     return `https://${server}/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
 
-  if (server.includes("khm"))
+  if (server === "khm.google.com")
     return `https://${server}/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
 };
 

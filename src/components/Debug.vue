@@ -12,6 +12,10 @@
 <script>
 import { defineComponent } from "vue";
 import log from "electron-log";
+import { EVENT_STOP_SERVER } from "@/consts/custom-events";
+import Store from "electron-store";
+
+const store = new Store();
 
 const getDirectory = (path) => {
   return path.substring(0, path.lastIndexOf("\\") + 1);
@@ -23,6 +27,13 @@ export default defineComponent({
     return {
       logDirectory: getDirectory(log.transports.file.getFile().path)
     };
+  },
+  methods: {
+    async resetToDefault() {
+      store.clear();
+      await window.ipcRenderer.invoke(EVENT_STOP_SERVER);
+      window.$message.warning("Please restart to take effect");
+    }
   }
 });
 
