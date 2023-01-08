@@ -42,6 +42,7 @@ export default defineComponent({
       store.set("selectedServer", this.selectedServer);
 
       if (this.serverStarted) {
+        log.info("Update server")
         await got.post("http://localhost:39871/configs", {
           json: {
             selectedServer: this.selectedServer
