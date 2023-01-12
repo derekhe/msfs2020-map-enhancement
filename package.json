@@ -4,7 +4,7 @@
     "name": "He Sicong"
   },
   "description": "Microsoft Flight Simulator 2020 map enhancement tool",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
