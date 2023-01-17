@@ -6,16 +6,19 @@
           <UpdateNotification />
           <n-tabs type="line">
             <n-tab-pane name="Mod Control" tab="Mod Control">
-              <n-space vertical size="large">
-                <n-switch
-                  @update:value="handleServerToggle"
-                  :loading="serverStatus===SERVER_STATUS.Starting"
-                  size="large"
-                  v-model:value="serverStarted"
-                >
-                  <template #checked>Back to Bing Map</template>
-                  <template #unchecked>Inject Google Map</template>
-                </n-switch>
+              <n-space vertical size="medium">
+                <n-space horizontal size="large">
+                  <n-switch
+                    @update:value="handleServerToggle"
+                    :loading="serverStatus===SERVER_STATUS.Starting"
+                    size="large"
+                    v-model:value="serverStarted"
+                  >
+                    <template #checked>Back to Bing Map</template>
+                    <template #unchecked>Inject Google Map</template>
+                  </n-switch>
+                  <n-checkbox v-model:checked="autoStart">Auto Start</n-checkbox>
+                </n-space>
                 <FirstTime />
                 <Important v-if="!serverStarted" />
                 <ServerCheck v-if="serverStarted"
@@ -25,7 +28,7 @@
               </n-space>
             </n-tab-pane>
             <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
-              <ProxySettings v-bind:server-started="serverStarted"/>
+              <ProxySettings v-bind:server-started="serverStarted" />
             </n-tab-pane>
             <n-tab-pane name="Map Server" tab="Map Server">
               <ServerSelection v-bind:server-started="serverStarted" />
@@ -85,11 +88,17 @@ export default defineComponent({
       nginxServerHealthCheckResult: null,
       HEALTH_CHECK: HEALTH_CHECK,
       SERVER_STATUS: SERVER_STATUS,
-      appVersion: window.require("electron").remote.app.getVersion()
+      appVersion: window.require("electron").remote.app.getVersion(),
+      autoStart: store.get("autoStart", false)
     };
   },
   setup() {
     window.$message = useMessage();
+  },
+  watch: {
+    autoStart: function(val, oldVal) {
+      store.set("autoStart", val);
+    }
   },
   computed: {
     healthCheckPassed() {
@@ -98,6 +107,10 @@ export default defineComponent({
   },
   async mounted() {
     setTimeout(await this.check443Port, 500);
+    if (this.autoStart) {
+      this.serverStarted = true;
+      await this.handleServerToggle(true);
+    }
   },
   methods: {
     async handleServerToggle(value) {
@@ -169,7 +182,6 @@ export default defineComponent({
         log.info("Checking nginx server");
         await got(url, options);
       } catch (ex) {
-
         if (ex instanceof got.HTTPError) {
           log.info("Nginx server check result", ex.response.statusCode);
           if (ex.response.statusCode === 404) {
@@ -179,6 +191,7 @@ export default defineComponent({
             this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
           }
         } else {
+          log.error("Nginx server check result", ex);
           this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
         }
       }
