@@ -1,7 +1,7 @@
 <template>
   <n-card bordered title="Runtime Info" size="small">
     <n-space vertical size="small">
-      <n-tag type="warning">It is running now. If you like this mod, please help me improve it by <a
+      <n-tag type="warning" size="large">It is running now and enjoy. Please do help me for future development by <a
         href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US">donating</a>
       </n-tag>
       <n-p>Image loaded: {{ statics.numOfImageLoaded }}</n-p>
