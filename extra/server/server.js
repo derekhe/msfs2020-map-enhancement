@@ -82,8 +82,9 @@ const getMapProvider = (server) => {
   return mapProviders.filter((it) => it.name === server)[0];
 };
 
-router.get("/tiles/akh:quadKey.jpeg", async (ctx, next) => {
-  const quadKey = ctx.params.quadKey;
+router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
+  const quadKey = ctx.params.quadKey.replace("kh","");
+
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
   let mapProvider = getMapProvider(configs.selectedServer);
