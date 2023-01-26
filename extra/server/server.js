@@ -15,13 +15,17 @@ const argv = require("minimist")(process.argv.slice(2));
 let configs = {
   proxyAddress: argv["proxyAddress"],
   selectedServer: argv["selectedServer"],
+  cacheEnabled: argv["cacheEnabled"] || true,
+  cacheLocation: argv["cacheLocation"] || "./cache.sqlite",
 };
+
+console.log("Using configs", configs);
 
 let log = require("electron-log");
 const moment = require("moment");
 const { MTGoogle, KHMGoogle, ArcGIS } = require("./map-providers");
-
-log.info("Starting mock server, arguments:", argv);
+const Keyv = require("keyv");
+const keyv = new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\","/")}`);
 
 const statics = {
   numOfImageLoaded: 0,
@@ -83,7 +87,7 @@ const getMapProvider = (server) => {
 };
 
 router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
-  const quadKey = ctx.params.quadKey.replace("kh","");
+  const quadKey = ctx.params.quadKey.replace("kh", "");
 
   const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
 
@@ -107,13 +111,22 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
       : undefined,
   };
 
-  log.info("Downloading", url, configs.proxyAddress);
+  const cacheKey = `${tileX}-${tileY}-${levelOfDetail}`;
 
-  const resp = await got(url, options).buffer();
+  let content = configs.cacheEnabled === "true" ? await keyv.get(cacheKey) : undefined;
 
-  if (await mapProvider.isInvalid(resp)) {
-    ctx.response.statusCode = 404;
-    return;
+  if (content) {
+    log.info("Load from cache", url);
+  } else {
+    log.info("Downloading", url, configs.proxyAddress);
+    content = await got(url, options).buffer();
+
+    if (await mapProvider.isInvalid(content)) {
+      ctx.response.statusCode = 404;
+      return;
+    }
+
+    await keyv.set(cacheKey, content);
   }
 
   ctx.response.set("Content-Type", "image/jpeg");
@@ -127,7 +140,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   ctx.response.set("X-VE-TILEMETA-CaptureDatesRang", "1/1/1999-12/31/2003");
   ctx.response.set("X-VE-TILEMETA-CaptureDateMaxYY", "0312");
   ctx.response.set("X-VE-TILEMETA-Product-IDs", "209");
-  let image = await sharp(resp)
+  let image = await sharp(content)
     .modulate({
       lightness: -5,
     })

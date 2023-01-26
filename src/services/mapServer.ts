@@ -11,27 +11,35 @@ let serverProcess: ChildProcess;
 
 export async function startMapServer(
   proxyAddress: string,
-  selectedServer: string
+  selectedServer: string,
+  cacheLocation: string,
+  cacheEnabled: string
 ): Promise<void> {
   log.info("Starting map server")
   if (serverProcess) {
     serverProcess.kill();
   }
 
+  let args = [
+    "--proxyAddress",
+    proxyAddress,
+    "--selectedServer",
+    selectedServer,
+    "--cacheLocation",
+    cacheLocation,
+    "--cacheEnabled",
+    cacheEnabled
+  ];
+
   if (isDevelopment) {
     log.info("Starting koa server in dev env");
-    serverProcess = fork("extra/server/server.js", [
-      "--proxyAddress",
-      proxyAddress,
-      "--selectedServer",
-      selectedServer,
-    ]);
+    serverProcess = fork("extra/server/server.js", args);
     log.info("Started koa server in dev env");
   } else {
     log.info("Starting koa server in prod env");
     serverProcess = fork(
       "./server.js",
-      ["--proxyAddress", proxyAddress, "--selectedServer", selectedServer],
+      args,
       {
         cwd: path.join(__dirname, "../extra/server"),
       }
