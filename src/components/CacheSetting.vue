@@ -1,12 +1,18 @@
 <template>
-  <n-space vertical>
-    <n-checkbox v-model:checked="cacheEnabled">Enable Cache</n-checkbox>
-    <n-p>Cache Location</n-p>
-    <n-input-group style="{width:100%}">
-      <n-input v-model:value="cacheLocation" autosize style="{min-width:60%}"/>
+  <n-h4>Cache</n-h4>
+  <n-p>
+    The internal cache is used to speed up satellite image loading speed when in game "Rolling Cache" is disabled.
+    "Rolling Cache" may cause issue when you sometimes fly with Bing map and sometimes with others.
+  </n-p>
+  <n-checkbox v-model:checked="cacheEnabled">Enable Cache</n-checkbox>
+  <n-h4>Cache Location</n-h4>
+  <n-p>The default cache location is under the installation path. You can put it to another location. When you change the cache location, the old cache file will still there. Please delete it manually.</n-p>
+  <n-space vertical size="large">
+    <n-input-group style="{width:'100%'}">
+      <n-input v-model:value="cacheLocation"  style="{width:'60%'}" />
       <n-button type="primary" ghost @click="resetPath">Reset To Default</n-button>
     </n-input-group>
-    <n-button>Clear Cache</n-button>
+    <n-button @click="clearCache">Clear Cache</n-button>
   </n-space>
 </template>
 
@@ -17,6 +23,7 @@ import electron from "electron";
 const store = new Store();
 
 import { defineComponent } from "vue";
+import got from "got";
 
 export default defineComponent({
   name: "CacheSetting",
@@ -37,6 +44,9 @@ export default defineComponent({
   methods: {
     resetPath() {
       this.cacheLocation = electron.remote.app.getAppPath() + "\\cache.sqlite";
+    },
+    async clearCache() {
+      await got.post("http://localhost:39871/clear-cache");
     }
   },
   watch: {
