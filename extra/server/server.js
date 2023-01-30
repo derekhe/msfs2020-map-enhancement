@@ -22,6 +22,7 @@ let configs = {
 console.log("Using configs", configs);
 
 let log = require("electron-log");
+console.log("Log path", log.transports.file.getFile().path);
 const moment = require("moment");
 const { MTGoogle, KHMGoogle, ArcGIS, BingMap } = require("./map-providers");
 const Keyv = require("keyv");
@@ -130,6 +131,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   statics.numOfImageLoaded += 1;
   statics.lastLoadingImageUrl = url;
   statics.lastLoadTime = moment().timestamp;
+  log.info(`Loaded ${quadKey}`)
 });
 
 app
