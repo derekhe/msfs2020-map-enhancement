@@ -25,13 +25,12 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - MSFS2020 version: [e.g. msstore/steam]
- - Browser [e.g. chrome, safari]
  - Version [e.g. 22]
 
 **Log** 
 Please provide the logs:
 - Find out "Trouble Shooting" tab and attach the log files
-- Attach logs from: <INSTALLATION PATH>\resources\extra\nginx\logs
+- Attach logs from: (INSTALLATION PATH)\resources\extra\nginx\logs
 
 **Additional context**
 Add any other context about the problem here.
