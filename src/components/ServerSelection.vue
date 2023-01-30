@@ -21,6 +21,8 @@
   <n-h3>ArcGIS</n-h3>
   <n-p>ArcGIS server provides more natural color than Google server in some areas, but it lacks high resolution data when flying low. Some areas have different satellite images in different resolution, so you will see image changes when flying low.</n-p>
   <n-P>ArcGIS server does not need to use a proxy.</n-P>
+  <n-h3>Bing Map (Latest)</n-h3>
+  <n-p>MSFS's bing map is quite old in the game, select this will replace the bing map to latest bing map (same as https://www.bing.com/maps/aerial)</n-p>
 </template>
 
 <script>
@@ -39,7 +41,7 @@ export default defineComponent({
   },
   data() {
     return {
-      servers: ["mt.google.com", "khm.google.com", "ArcGIS"],
+      servers: ["mt.google.com", "khm.google.com", "ArcGIS", "Bing Map (Latest)"],
       selectedServer: store.get("selectedServer", "mt.google.com")
     };
   },

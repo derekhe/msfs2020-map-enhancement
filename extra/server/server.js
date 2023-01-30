@@ -23,7 +23,7 @@ console.log("Using configs", configs);
 
 let log = require("electron-log");
 const moment = require("moment");
-const { MTGoogle, KHMGoogle, ArcGIS } = require("./map-providers");
+const { MTGoogle, KHMGoogle, ArcGIS, BingMap } = require("./map-providers");
 const Keyv = require("keyv");
 const keyv = new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\","/")}`);
 
@@ -35,30 +35,7 @@ const statics = {
 
 let lastLoadedImage = null;
 
-mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS()];
-
-const quadKeyToTileXY = function (quadKey) {
-  let tileX = 0;
-  let tileY = 0;
-  const levelOfDetail = quadKey.length;
-
-  for (let i = levelOfDetail; i > 0; i -= 1) {
-    const mask = 1 << (i - 1);
-    const t = quadKey[levelOfDetail - i];
-    if (t === "1") {
-      tileX |= mask;
-    }
-    if (t === "2") {
-      tileY |= mask;
-    }
-    if (t === "3") {
-      tileX |= mask;
-      tileY |= mask;
-    }
-  }
-
-  return { tileX, tileY, levelOfDetail };
-};
+mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS(), new BingMap()];
 
 router.post("/configs", (ctx, next) => {
   configs = { ...configs, ...ctx.request.body };
@@ -95,10 +72,8 @@ const getMapProvider = (server) => {
 router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   const quadKey = ctx.params.quadKey.replace("kh", "");
 
-  const { tileX, tileY, levelOfDetail } = quadKeyToTileXY(quadKey);
-
   let mapProvider = getMapProvider(configs.selectedServer);
-  const url = mapProvider.map(tileX, tileY, levelOfDetail);
+  const url = mapProvider.map(quadKey);
 
   let options = {
     timeout: {
@@ -117,9 +92,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
       : undefined,
   };
 
-  const cacheKey = `${tileX}-${tileY}-${levelOfDetail}`;
-
-  let content = configs.cacheEnabled === "true" ? await keyv.get(cacheKey) : undefined;
+  let content = configs.cacheEnabled === "true" ? await keyv.get(quadKey) : undefined;
 
   if (content) {
     log.info("Load from cache", url);
@@ -132,7 +105,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
       return;
     }
 
-    await keyv.set(cacheKey, content);
+    await keyv.set(quadKey, content);
   }
 
   ctx.response.set("Content-Type", "image/jpeg");

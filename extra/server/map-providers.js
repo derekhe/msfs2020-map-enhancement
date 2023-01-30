@@ -1,34 +1,60 @@
 const got = require("got");
 
-class MTGoogle {
+class MapProvider {
+  async isInvalid(content) {
+    return false;
+  }
+}
+
+class TileBasedMapProvider extends MapProvider {
+  quadKeyToTileXY(quadKey) {
+    let tileX = 0;
+    let tileY = 0;
+    const levelOfDetail = quadKey.length;
+
+    for (let i = levelOfDetail; i > 0; i -= 1) {
+      const mask = 1 << (i - 1);
+      const t = quadKey[levelOfDetail - i];
+      if (t === "1") {
+        tileX |= mask;
+      }
+      if (t === "2") {
+        tileY |= mask;
+      }
+      if (t === "3") {
+        tileX |= mask;
+        tileY |= mask;
+      }
+    }
+
+    return { tileX, tileY, levelOfDetail };
+  }
+}
+
+class MTGoogle extends TileBasedMapProvider {
   name = "mt.google.com";
 
-  map(tileX, tileY, levelOfDetail) {
+  map(quadKey) {
+    const { tileX, tileY, levelOfDetail } = this.quadKeyToTileXY(quadKey);
     return `https://mt.google.com/vt/lyrs=s&x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
   }
-
-  async isInvalid(content) {
-    return false;
-  }
 }
 
-class KHMGoogle {
+class KHMGoogle extends TileBasedMapProvider {
   name = "khm.google.com";
 
-  map(tileX, tileY, levelOfDetail) {
+  map(quadKey) {
+    const { tileX, tileY, levelOfDetail } = this.quadKeyToTileXY(quadKey);
     return `https://khm.google.com/kh/v=908?x=${tileX}&y=${tileY}&z=${levelOfDetail}`;
-  }
-
-  async isInvalid(content) {
-    return false;
   }
 }
 
-class ArcGIS {
+class ArcGIS extends TileBasedMapProvider {
   name = "ArcGIS";
   emptyContent = null;
 
-  map(tileX, tileY, levelOfDetail) {
+  map(quadKey) {
+    const { tileX, tileY, levelOfDetail } = this.quadKeyToTileXY(quadKey);
     return `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${levelOfDetail}/${tileY}/${tileX}`;
   }
 
@@ -48,8 +74,18 @@ class ArcGIS {
   }
 }
 
+class BingMap extends MapProvider {
+  name = "Bing Map (Latest)";
+
+  map(quadKey) {
+    return `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/${quadKey}?mkt=en-US&it=A&shading=t&n=z&og=1722`;
+  }
+}
+
 module.exports = {
+  TileBasedMapProvider,
   MTGoogle,
   KHMGoogle,
   ArcGIS,
+  BingMap,
 };
