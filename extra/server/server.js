@@ -15,7 +15,7 @@ const argv = require("minimist")(process.argv.slice(2));
 let configs = {
   proxyAddress: argv["proxyAddress"],
   selectedServer: argv["selectedServer"],
-  cacheEnabled: argv["cacheEnabled"] || true,
+  cacheEnabled: argv["cacheEnabled"] === "true",
   cacheLocation: argv["cacheLocation"] || "./cache.sqlite",
 };
 
@@ -25,8 +25,25 @@ let log = require("electron-log");
 console.log("Log path", log.transports.file.getFile().path);
 const moment = require("moment");
 const { MTGoogle, KHMGoogle, ArcGIS, BingMap } = require("./map-providers");
+
 const Keyv = require("keyv");
-const keyv = new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\","/")}`);
+
+class DummyKeyv {
+  constructor() {
+    console.log("Use dummy keyv");
+  }
+
+  async set(key, value) {}
+
+  async clear() {}
+
+  async get(key, options) {}
+}
+
+const keyv =
+  configs.cacheEnabled
+    ? new Keyv(`sqlite://${configs.cacheLocation.replace("\\\\", "/")}`)
+    : new DummyKeyv();
 
 const statics = {
   numOfImageLoaded: 0,
@@ -55,11 +72,11 @@ router.get("/statics", (ctx, next) => {
 });
 
 router.post("/clear-cache", async (ctx, next) => {
-  log.info("Clearing cache")
+  log.info("Clearing cache");
   await keyv.clear();
-  log.info("Cache cleared")
+  log.info("Cache cleared");
   ctx.response.status = 200;
-})
+});
 
 router.get("/health", (ctx, next) => {
   log.info("Received health check");
@@ -94,7 +111,8 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
       : undefined,
   };
 
-  let content = configs.cacheEnabled === "true" ? await keyv.get(quadKey) : undefined;
+  let content =
+    configs.cacheEnabled ? await keyv.get(quadKey) : undefined;
 
   if (content) {
     log.info("Load from cache", url);
@@ -132,7 +150,7 @@ router.get("/tiles/a:quadKey.jpeg", async (ctx, next) => {
   statics.numOfImageLoaded += 1;
   statics.lastLoadingImageUrl = url;
   statics.lastLoadTime = moment().timestamp;
-  log.info(`Loaded ${quadKey}`)
+  log.info(`Loaded ${quadKey}`);
 });
 
 app

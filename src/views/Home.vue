@@ -136,7 +136,7 @@ export default defineComponent({
           proxyAddress: store.get("proxyAddress", ""),
           selectedServer: store.get("selectedServer", "mt.google.com"),
           cacheLocation: store.get("cacheLocation"),
-          cacheEnabled: store.get("cacheEnabled")
+          cacheEnabled: store.get("enableCache")
         });
 
       log.info("Start mod result", result);
