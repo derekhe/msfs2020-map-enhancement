@@ -102,8 +102,6 @@ if (isDevelopment) {
 }
 
 ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
-  const { proxyAddress, selectedServer, cacheLocation, cacheEnabled } = arg;
-
   log.info("Staring server with", JSON.stringify(arg) );
 
   try {
@@ -116,7 +114,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
   try {
     await addCertificate();
     patchHostsFile();
-    await startMapServer(proxyAddress, selectedServer, cacheLocation, cacheEnabled);
+    await startMapServer(arg);
     log.info("Start map server success");
     return { success: true };
   } catch (e) {

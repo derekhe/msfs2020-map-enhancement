@@ -17,6 +17,7 @@ let configs = {
   selectedServer: argv["selectedServer"],
   cacheEnabled: argv["cacheEnabled"] === "true",
   cacheLocation: argv["cacheLocation"] || "./cache.sqlite",
+  mapboxAccessToken: argv["mapboxAccessToken"]
 };
 
 console.log("Using configs", configs);
@@ -24,7 +25,7 @@ console.log("Using configs", configs);
 let log = require("electron-log");
 console.log("Log path", log.transports.file.getFile().path);
 const moment = require("moment");
-const { MTGoogle, KHMGoogle, ArcGIS, BingMap } = require("./map-providers");
+const { MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox } = require("./map-providers");
 
 const Keyv = require("keyv");
 
@@ -53,7 +54,7 @@ const statics = {
 
 let lastLoadedImage = null;
 
-mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS(), new BingMap()];
+mapProviders = [new MTGoogle(), new KHMGoogle(), new ArcGIS(), new BingMap(), new MapBox(configs.mapboxAccessToken)];
 
 router.post("/configs", (ctx, next) => {
   configs = { ...configs, ...ctx.request.body };

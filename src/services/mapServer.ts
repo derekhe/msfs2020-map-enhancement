@@ -8,17 +8,19 @@ const execAsync = util.promisify(execFile);
 const isDevelopment = process.env.NODE_ENV !== "production";
 let serverProcess: ChildProcess;
 
-
-export async function startMapServer(
-  proxyAddress: string,
-  selectedServer: string,
-  cacheLocation: string,
-  cacheEnabled: string
-): Promise<void> {
-  log.info("Starting map server")
+export async function startMapServer(arg: any): Promise<void> {
+  log.info("Starting map server");
   if (serverProcess) {
     serverProcess.kill();
   }
+
+  const {
+    proxyAddress,
+    selectedServer,
+    cacheLocation,
+    cacheEnabled,
+    mapboxAccessToken,
+  } = arg;
 
   let args = [
     "--proxyAddress",
@@ -28,7 +30,9 @@ export async function startMapServer(
     "--cacheLocation",
     cacheLocation,
     "--cacheEnabled",
-    cacheEnabled
+    cacheEnabled,
+    "--mapboxAccessToken",
+    mapboxAccessToken,
   ];
 
   if (isDevelopment) {
@@ -37,13 +41,9 @@ export async function startMapServer(
     log.info("Started koa server in dev env");
   } else {
     log.info("Starting koa server in prod env");
-    serverProcess = fork(
-      "./server.js",
-      args,
-      {
-        cwd: path.join(__dirname, "../extra/server"),
-      }
-    );
+    serverProcess = fork("./server.js", args, {
+      cwd: path.join(__dirname, "../extra/server"),
+    });
     log.info("Started koa server in prod env");
   }
 
@@ -68,4 +68,3 @@ export async function stopNginxServer(): Promise<void> {
 
   serverProcess.kill();
 }
-

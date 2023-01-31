@@ -136,7 +136,8 @@ export default defineComponent({
           proxyAddress: store.get("proxyAddress", ""),
           selectedServer: store.get("selectedServer", "mt.google.com"),
           cacheLocation: store.get("cacheLocation"),
-          cacheEnabled: store.get("enableCache")
+          cacheEnabled: store.get("enableCache"),
+          mapboxAccessToken: store.get("mapboxAccessToken")
         });
 
       log.info("Start mod result", result);
