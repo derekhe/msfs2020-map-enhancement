@@ -15,6 +15,10 @@
       </n-radio>
     </n-space>
   </n-radio-group>
+  <n-h3>Mapbox</n-h3>
+  <n-p>Mapbox provide better and newer images in some places, please sign up a free key in <n-a href="https://account.mapbox.com/access-tokens/" target="_blank">https://account.mapbox.com/access-tokens</n-a> and input it below</n-p>
+  <n-input v-model:value="mapboxAccessToken" type="text" placeholder="Mapbox Access Token" />
+  <n-p>Note: mapbox access token provides 200,000 tiles for free, please consider use the "Rolling Cache" in side game or enable the "Cache" inside this mod.</n-p>
   <n-h3>Google servers</n-h3>
   <n-p>They provide the best resolution when flying low and seems very update to date. Both Google server's images are the same, choose the fastest from mt and khm server.</n-p>
   <n-p>In some places, google servers are blocked, you should setup a proxy.</n-p>
@@ -23,10 +27,6 @@
   <n-P>ArcGIS server does not need to use a proxy.</n-P>
   <n-h3>Bing Map (Latest)</n-h3>
   <n-p>MSFS's bing map is quite old in the game, select this will replace the bing map to latest bing map (same as https://www.bing.com/maps/aerial)</n-p>
-  <n-h3>Mapbox</n-h3>
-  <n-p>Mapbox provide better and newer images in some places, please sign up a free key in <n-a href="https://account.mapbox.com/access-tokens/">https://account.mapbox.com/access-tokens</n-a> and input it below</n-p>
-  <n-input v-model:value="mapboxAccessToken" type="text" placeholder="Mapbox Access Token" />
-  <n-p>Note: mapbox access token provides 200,000 tiles for free, please consider use the "Rolling Cache" in side game or enable the "Cache" inside this mod.</n-p>
 </template>
 
 <script>
