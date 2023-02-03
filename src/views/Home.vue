@@ -33,9 +33,9 @@
             <n-tab-pane name="Map Server" tab="Map Server">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
-            <n-tab-pane name="Cache" tab="Cache">
-              <CacheSetting/>
-            </n-tab-pane>
+<!--            <n-tab-pane name="Cache" tab="Cache">-->
+<!--              <CacheSetting/>-->
+<!--            </n-tab-pane>-->
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
             </n-tab-pane>
@@ -83,7 +83,7 @@ export default defineComponent({
     FirstTime,
     Footer,
     UpdateNotification,
-    CacheSetting
+    // CacheSetting
   },
   data() {
     return {
@@ -101,7 +101,7 @@ export default defineComponent({
     window.$message = useMessage();
   },
   watch: {
-    autoStart: function(val, oldVal) {
+    autoStart: function(val) {
       store.set("autoStart", val);
     }
   },

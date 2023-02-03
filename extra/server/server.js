@@ -15,7 +15,7 @@ const argv = require("minimist")(process.argv.slice(2));
 let configs = {
   proxyAddress: argv["proxyAddress"],
   selectedServer: argv["selectedServer"],
-  cacheEnabled: argv["cacheEnabled"] === "true",
+  cacheEnabled: false,
   cacheLocation: argv["cacheLocation"] || "./cache.sqlite",
   mapboxAccessToken: argv["mapboxAccessToken"]
 };
