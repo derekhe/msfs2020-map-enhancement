@@ -12,7 +12,7 @@ import {
 
 import { addCertificate } from "@/services/certificate";
 import { patchHostsFile, unpatchHostsFile } from "@/services/hosts";
-import { startMapServer, stopNginxServer } from "@/services/mapServer";
+import { startMapServer, stopServer } from "@/services/mapServer";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import log from "electron-log";
@@ -76,13 +76,13 @@ app.on("activate", () => {
 });
 
 app.on("ready", async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    try {
-      await installExtension(VUEJS3_DEVTOOLS);
-    } catch (e) {
-      log.error("Vue Devtools failed to install:", e.toString());
-    }
-  }
+  // if (isDevelopment && !process.env.IS_TEST) {
+  //   try {
+  //     await installExtension(VUEJS3_DEVTOOLS);
+  //   } catch (e) {
+  //     log.error("Vue Devtools failed to install:", e.toString());
+  //   }
+  // }
   await createWindow();
 });
 
@@ -106,7 +106,7 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
 
   try {
     log.info("Trying to stop any nginx server");
-    await stopNginxServer();
+    await stopServer();
   } catch (e) {
     log.info("Stop nginx server with error but it can ignore", e);
   }
@@ -148,5 +148,5 @@ ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
 
 async function StopServer() {
   unpatchHostsFile();
-  await stopNginxServer();
+  await stopServer();
 }
