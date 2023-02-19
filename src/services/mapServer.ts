@@ -40,20 +40,18 @@ export async function startMapServer(arg: any): Promise<void> {
 
   imageServer = spawn("./python/python.exe", args, {
     cwd: path.join(__dirname, "../extra/server"),
+    stdio: 'ignore'
   });
-
-  setupLog(imageServer, "Image Server");
 
   log.info("Starting nginx server");
   nginxProcess = spawn("./nginx.exe", [], {
     cwd: path.join(__dirname, "../extra/nginx"),
+    stdio: 'ignore'
   });
 
   nginxProcess.on("error", (err) => {
     log.error("Failed to start nginx", err);
   });
-
-  setupLog(nginxProcess, "Nginx Server");
 
   log.info("Started nginx server");
 }
@@ -65,7 +63,7 @@ function setupLog(process: ChildProcess, name: string) {
   });
 
   process.stderr!.setEncoding("utf8");
-  process.stderr!.on("data", function (data) {
+  process.stderr!.on("error", function (data) {
     log.info(`${name}:`, data);
   });
 

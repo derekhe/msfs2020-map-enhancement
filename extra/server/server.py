@@ -1,5 +1,7 @@
 import os
 import sys
+import logging
+import logging.handlers
 
 sys.path.append(os.path.curdir)
 
@@ -26,6 +28,17 @@ parser.add_argument('--cacheLocation', default="./cache", required=False)
 parser.add_argument('--mapboxAccessToken', default="", required=False)
 argv = parser.parse_args()
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+console = logging.StreamHandler()
+logger.addHandler(console)
+
+file_rotating_file = logging.handlers.RotatingFileHandler("./logs/image_server.log", maxBytes=1024 * 1024 * 10,
+                                                          backupCount=3)
+file_rotating_file.setLevel(logging.INFO)
+logger.addHandler(file_rotating_file)
+
 app: Flask = Flask(__name__)
 
 
@@ -50,7 +63,8 @@ class Statics:
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
-print("Using configs", server_configs)
+logging.info("Server started")
+logging.info("Started with configs %s", server_configs.__dict__)
 
 map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs.mapboxAccessToken)]
 last_image = None
@@ -72,7 +86,7 @@ def configs() -> Response:
     if 'proxyAddress' in new_configs:
         server_configs.proxyAddress = new_configs['proxyAddress']
 
-    print(server_configs)
+    logging.info("Updated configs %s", server_configs.__dict__)
 
     return jsonify(server_configs)
 
@@ -91,12 +105,12 @@ def statics() -> Response:
 
 @app.route('/tiles/mtx<dummy>')
 def mtx(dummy: str = None) -> Response:
-    print("Handing request to", request.url)
+    logger.info("Handing request to %s", request.url)
     request_header = {}
     for k, v in request.headers:
         request_header[k] = v
 
-    print("Downloading from:", request.url)
+    logger.info("Downloading from: %s", request.url)
 
     url = request.url.replace(request.host, "kh.ssl.ak.tiles.virtualearth.net.edgekey.net").replace("http://",
                                                                                                     "https://")
@@ -117,9 +131,11 @@ def tiles(path: str) -> Response:
     map_provider = list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
     url = map_provider.map(quadkey)
 
-    print("Downloading from:", url, server_configs.proxyAddress)
+    logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
     resp = requests.get(
         url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30)
+
+    logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
     if resp.status_code != 200:
         return Response(status=404)
@@ -135,7 +151,7 @@ def tiles(path: str) -> Response:
         im.save(img_byte_arr, format='jpeg')
         output = img_byte_arr.getvalue()
     except FileNotFoundError or PIL.UnidentifiedImageError or ValueError or TypeError:
-        print("Image adjust failed, use original picture")
+        logger.error("Image adjust failed, use original picture")
         output = content
         traceback.print_exc()
 
