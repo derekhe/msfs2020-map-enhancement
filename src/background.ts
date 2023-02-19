@@ -142,6 +142,8 @@ ipcMain.handle(EVENT_CHECK_PORT, async () => {
 });
 
 ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = false;
   let updateCheckResult = await autoUpdater.checkForUpdates();
   return updateCheckResult.updateInfo;
 });

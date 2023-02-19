@@ -42,23 +42,7 @@ export async function startMapServer(arg: any): Promise<void> {
     cwd: path.join(__dirname, "../extra/server"),
   });
 
-  imageServer.stdout!.setEncoding("utf8");
-  imageServer.stdout!.on("data", function (data) {
-    log.info(data);
-  });
-
-  imageServer.stderr!.setEncoding("utf8");
-  imageServer.stderr!.on("data", function (data) {
-    log.info(data);
-  });
-
-  imageServer.on("close", function (code) {
-    log.log("image server closed", code);
-  });
-
-  imageServer.on("error", (err) => {
-    log.error("Failed to start image server", err);
-  });
+  setupLog(imageServer, "Image Server");
 
   log.info("Starting nginx server");
   nginxProcess = spawn("./nginx.exe", [], {
@@ -69,33 +53,47 @@ export async function startMapServer(arg: any): Promise<void> {
     log.error("Failed to start nginx", err);
   });
 
+  setupLog(nginxProcess, "Nginx Server");
+
   log.info("Started nginx server");
 }
 
-export async function stopServer(): Promise<void> {
-  log.info("Stopping server");
+function setupLog(process: ChildProcess, name: string) {
+  process.stdout!.setEncoding("utf8");
+  process.stdout!.on("data", function (data) {
+    log.info(`${name}:`, data);
+  });
 
-  if (imageServer) {
-    imageServer.kill();
-  } else {
-    try {
-      await execAsync("taskkill", ["/F", "/IM", "python.exe"], {
-        shell: true,
-      });
-    } catch (e) {
-      log.info(e);
-    }
+  process.stderr!.setEncoding("utf8");
+  process.stderr!.on("data", function (data) {
+    log.info(`${name}:`, data);
+  });
+
+  process.on("close", function (code) {
+    log.log(`${name} Process closed`, code);
+  });
+
+  process.on("error", (err) => {
+    log.error(`${name} Failed to start process`, err);
+  });
+}
+
+export async function stopServer(): Promise<void> {
+  log.info("Force killing server");
+
+  try {
+    await execAsync("taskkill", ["/F", "/IM", "python.exe"], {
+      shell: true,
+    });
+  } catch (e) {
+    log.info(e);
   }
 
-  if (nginxProcess) {
-    nginxProcess.kill();
-  } else {
-    try {
-      await execAsync("taskkill", ["/F", "/IM", "nginx.exe"], {
-        shell: true,
-      });
-    } catch (e) {
-      log.info(e);
-    }
+  try {
+    await execAsync("taskkill", ["/F", "/IM", "nginx.exe"], {
+      shell: true,
+    });
+  } catch (e) {
+    log.info(e);
   }
 }
