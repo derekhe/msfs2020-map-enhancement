@@ -6,6 +6,7 @@ import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
 import {
   EVENT_CHECK_PORT,
   EVENT_CHECK_UPDATE,
+  EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER,
 } from "@/consts/custom-events";
@@ -20,6 +21,7 @@ import log from "electron-log";
 import path from "path";
 // @ts-ignore
 import Store from "electron-store";
+import { startGame } from "@/services/game";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -76,13 +78,13 @@ app.on("activate", () => {
 });
 
 app.on("ready", async () => {
-  // if (isDevelopment && !process.env.IS_TEST) {
-  //   try {
-  //     await installExtension(VUEJS3_DEVTOOLS);
-  //   } catch (e) {
-  //     log.error("Vue Devtools failed to install:", e.toString());
-  //   }
-  // }
+  if (isDevelopment && !process.env.IS_TEST) {
+    try {
+      await installExtension(VUEJS3_DEVTOOLS);
+    } catch (e) {
+      log.error("Vue Devtools failed to install:", e.toString());
+    }
+  }
   await createWindow();
 });
 
@@ -102,7 +104,7 @@ if (isDevelopment) {
 }
 
 ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
-  log.info("Staring server with", JSON.stringify(arg) );
+  log.info("Staring server with", JSON.stringify(arg));
 
   try {
     log.info("Trying to stop any nginx server");
@@ -134,6 +136,11 @@ ipcMain.handle(EVENT_STOP_SERVER, async (event, arg) => {
   }
 });
 
+async function StopServer() {
+  unpatchHostsFile();
+  await stopServer();
+}
+
 ipcMain.handle(EVENT_CHECK_PORT, async () => {
   const tcpPortUsed = require("tcp-port-used");
   const result = await tcpPortUsed.check(443, "127.0.0.1");
@@ -148,7 +155,6 @@ ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
   return updateCheckResult.updateInfo;
 });
 
-async function StopServer() {
-  unpatchHostsFile();
-  await stopServer();
-}
+ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
+  await startGame(arg["distributor"]);
+});
