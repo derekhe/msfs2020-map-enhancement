@@ -31,7 +31,7 @@ const getDirectory = (path) => {
 };
 
 const getDefaultPath = ()=>{
-  return "D:\\cache.sqlite";
+  return ".\\cache";
 }
 
 export default defineComponent({
@@ -55,7 +55,12 @@ export default defineComponent({
       this.cacheLocation = getDefaultPath();
     },
     async clearCache() {
-      await got.post("http://localhost:39871/clear-cache");
+      try {
+        await got.post("http://localhost:39871/clear-cache");
+      }
+      catch(e){
+        window.$message.error("Please start injection and then clear cache");
+      }
     }
   },
   watch: {
