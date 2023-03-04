@@ -1,9 +1,13 @@
 import os
 import sys
+sys.path.append(os.path.curdir)
+
 import logging
 import logging.handlers
 
-sys.path.append(os.path.curdir)
+from config import Config
+from dummy_cache import DummyCache
+from statics import Statics
 
 from datetime import datetime
 
@@ -17,7 +21,6 @@ from PIL import Image, ImageEnhance
 from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
 from flask import Flask, make_response, Response, request, jsonify
 import argparse
-from dataclasses import dataclass
 from diskcache import Cache
 
 urllib3.disable_warnings()
@@ -36,6 +39,7 @@ logger.setLevel(logging.INFO)
 console = logging.StreamHandler()
 logger.addHandler(console)
 
+os.makedirs("./logs", exist_ok=True)
 file_rotating_file = logging.handlers.RotatingFileHandler("./logs/image_server.log", maxBytes=1024 * 1024 * 10,
                                                           backupCount=3)
 file_rotating_file.setLevel(logging.INFO)
@@ -43,28 +47,10 @@ logger.addHandler(file_rotating_file)
 
 app: Flask = Flask(__name__)
 
-
-@dataclass
-class Config:
-    proxyAddress: str
-    selectedServer: str
-    cacheLocation: str
-    cacheEnabled: bool
-    mapboxAccessToken: str
-
-
 server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
                         cacheLocation=argv.cacheLocation,
                         cacheEnabled=argv.cacheEnabled,
                         mapboxAccessToken=argv.mapboxAccessToken)
-
-
-@dataclass
-class Statics:
-    numOfImageLoaded: int
-    lastLoadingImageUrl: str
-    lastLoadTime: datetime
-
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
@@ -73,18 +59,6 @@ logging.info("Started with configs %s", server_configs.__dict__)
 
 map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs.mapboxAccessToken)]
 last_image = None
-
-
-class DummyCache:
-    def clear(self):
-        pass
-
-    def get(self, key):
-        return None
-
-    def set(self, key, content):
-        pass
-
 
 if server_configs.cacheEnabled:
     cache = Cache(
@@ -165,7 +139,8 @@ def tiles(path: str) -> Response:
     if content is None:
         logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
         resp = requests.get(
-            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30, verify=False)
+            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+            verify=False)
 
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
