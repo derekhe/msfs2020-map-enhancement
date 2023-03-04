@@ -1,5 +1,8 @@
+import ast
+import concurrent
 import os
 import sys
+
 sys.path.append(os.path.curdir)
 
 import logging
@@ -22,6 +25,7 @@ from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
 from flask import Flask, make_response, Response, request, jsonify
 import argparse
 from diskcache import Cache
+from concurrent.futures.thread import ThreadPoolExecutor
 
 urllib3.disable_warnings()
 
@@ -31,6 +35,7 @@ parser.add_argument('--selectedServer', default="mt.google.com")
 parser.add_argument('--cacheLocation', default="./cache", required=False)
 parser.add_argument('--cacheEnabled', default=False, required=False)
 parser.add_argument('--mapboxAccessToken', default="", required=False)
+parser.add_argument('--enableHighLOD', default=False, required=False)
 argv = parser.parse_args()
 
 logger = logging.getLogger()
@@ -49,8 +54,9 @@ app: Flask = Flask(__name__)
 
 server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
                         cacheLocation=argv.cacheLocation,
-                        cacheEnabled=argv.cacheEnabled,
-                        mapboxAccessToken=argv.mapboxAccessToken)
+                        cacheEnabled=argv.cacheEnabled == 'true',
+                        mapboxAccessToken=argv.mapboxAccessToken,
+                        enableHighLOD=argv.enableHighLOD == 'true')
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
@@ -132,25 +138,11 @@ def mtx(dummy: str = None) -> Response:
 def tiles(path: str) -> Response:
     quadkey = re.findall(r"(\d+).jpeg", path)[0]
     map_provider = list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
-    url = map_provider.map(quadkey)
 
-    content = cache.get(url)
-
-    if content is None:
-        logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
-        resp = requests.get(
-            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
-            verify=False)
-
-        logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
-
-        if resp.status_code != 200:
-            return Response(status=404)
-
-        content = resp.content
-        cache.set(url, content)
+    if server_configs.enableHighLOD:
+        content = tiles_high_lod(quadkey, map_provider)
     else:
-        print("Use cached:", url)
+        content = tiles_normal_lod(quadkey, map_provider)
 
     try:
         im = Image.open(io.BytesIO(content))
@@ -180,10 +172,66 @@ def tiles(path: str) -> Response:
 
     global server_statics
     server_statics.numOfImageLoaded += 1
-    server_statics.lastLoadingImageUrl = url
+    server_statics.lastLoadingImageUrl = map_provider.map(quadkey)
     server_statics.lastLoadTime = datetime.utcnow()
 
     return response
+
+
+def download_from_url(url):
+    content = cache.get(url)
+
+    if content is None:
+        logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
+        resp = requests.get(
+            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+            verify=False)
+
+        logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
+
+        if resp.status_code != 200:
+            return Response(status=404)
+
+        content = resp.content
+        cache.set(url, content)
+    else:
+        print("Use cached:", url)
+
+    return content
+
+
+def tiles_normal_lod(quadkey, map_provider):
+    url = map_provider.map(quadkey)
+
+    return download_from_url(url)
+
+
+def tiles_high_lod(quadkey, map_provider):
+    urls = map_provider.next_level_urls(quadkey)
+
+    images = {}
+
+    with ThreadPoolExecutor() as executor:
+        future_to_url = {executor.submit(download_from_url, url): url for url in urls}
+
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                images[url] = Image.open(io.BytesIO(future.result()))
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))
+
+    output = Image.new('RGB', (256 * 2, 256 * 2))
+    output.paste(images[urls[0]], (0, 0))
+    output.paste(images[urls[1]], (256, 0))
+    output.paste(images[urls[2]], (0, 256))
+    output.paste(images[urls[3]], (256, 256))
+
+    img_byte_arr = io.BytesIO()
+    output.save(img_byte_arr, format='jpeg')
+    img_byte_arr = img_byte_arr.getvalue()
+
+    return img_byte_arr
 
 
 app.run(port=39871, threaded=True)

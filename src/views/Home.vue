@@ -15,10 +15,13 @@
                     v-model:value="serverStarted"
                   >
                     <template #checked>Back to Bing Map</template>
-                    <template #unchecked>Inject Google Map</template>
+                    <template #unchecked>Inject Map</template>
                   </n-switch>
+                </n-space>
+                <n-space>
                   <n-checkbox v-model:checked="autoInject">Auto Inject</n-checkbox>
                   <n-checkbox v-model:checked="autoStartGame">Auto Start Game</n-checkbox>
+                  <n-text>Game Store</n-text>
                   <n-radio-group
                     v-model:value="distributor"
                     name="radiogroup"
@@ -42,14 +45,14 @@
                 <RuntimeInfo v-if="healthCheckPassed" />
               </n-space>
             </n-tab-pane>
-            <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
-              <ProxySettings v-bind:server-started="serverStarted" />
-            </n-tab-pane>
-            <n-tab-pane name="Map Server" tab="Map Server">
+            <n-tab-pane name="Map Options" tab="Map Options">
               <ServerSelection v-bind:server-started="serverStarted" />
             </n-tab-pane>
             <n-tab-pane name="Cache" tab="Cache">
               <CacheSetting />
+            </n-tab-pane>
+            <n-tab-pane name="Proxy Settings" tab="Proxy Settings">
+              <ProxySettings v-bind:server-started="serverStarted" />
             </n-tab-pane>
             <n-tab-pane name="Debug" tab="Trouble Shooting">
               <Debug />
@@ -160,8 +163,9 @@ export default defineComponent({
           proxyAddress: store.get("proxyAddress", ""),
           selectedServer: store.get("selectedServer", "mt.google.com"),
           cacheLocation: store.get("cacheLocation"),
-          cacheEnabled: store.get("enableCache"),
-          mapboxAccessToken: store.get("mapboxAccessToken")
+          cacheEnabled: store.get("enableCache", false),
+          mapboxAccessToken: store.get("mapboxAccessToken"),
+          enableHighLOD: store.get("enableHighLOD", false)
         });
 
       log.info("Start mod result", result);

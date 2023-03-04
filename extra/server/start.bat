@@ -1,1 +1,1 @@
-.\python\python.exe server.py --proxyAddress="http://192.168.50.15:1082"
+.\python\python.exe server.py --proxyAddress="http://192.168.50.15:1082" --highLOD=true
