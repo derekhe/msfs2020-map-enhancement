@@ -1,6 +1,6 @@
 import abc
-import requests
-
+import hashlib
+from log import logger
 
 def tileXY_to_quad_key(tile_x: int, tile_y: int, level_of_detail: int) -> str:
     quad_key = ""
@@ -89,18 +89,18 @@ class ArcGIS(TileBasedMapProvider):
     def __init__(self):
         super().__init__("ArcGIS")
         self.emptyContent = None
+        self.sig = hashlib.md5()
 
     def map(self, quad_key):
         tile_x, tile_y, level_of_detail = quad_key_to_tileXY(quad_key)
         return f"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{level_of_detail}/{tile_y}/{tile_x}"
 
     def is_invalid_content(self, content):
-        if self.emptyContent is None:
-            self.emptyContent = requests.get(
-                "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/0/1/1",
-                timeout=15).content
+        self.sig.update(content)
+        hexdigest = self.sig.hexdigest()
 
-        return content == self.emptyContent
+        logger.info("Check sum", hexdigest)
+        return hexdigest == 'f27d9de7f80c13501f470595e327aa6d'
 
 
 class BingMap(MapProvider):

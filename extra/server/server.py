@@ -5,9 +5,6 @@ import sys
 
 sys.path.append(os.path.curdir)
 
-import logging
-import logging.handlers
-
 from config import Config
 from dummy_cache import DummyCache
 from statics import Statics
@@ -26,6 +23,7 @@ from flask import Flask, make_response, Response, request, jsonify
 import argparse
 from diskcache import Cache
 from concurrent.futures.thread import ThreadPoolExecutor
+from log import logger
 
 urllib3.disable_warnings()
 
@@ -38,18 +36,6 @@ parser.add_argument('--mapboxAccessToken', default="", required=False)
 parser.add_argument('--enableHighLOD', default=False, required=False)
 argv = parser.parse_args()
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-console = logging.StreamHandler()
-logger.addHandler(console)
-
-os.makedirs("./logs", exist_ok=True)
-file_rotating_file = logging.handlers.RotatingFileHandler("./logs/image_server.log", maxBytes=1024 * 1024 * 10,
-                                                          backupCount=3)
-file_rotating_file.setLevel(logging.INFO)
-logger.addHandler(file_rotating_file)
-
 app: Flask = Flask(__name__)
 
 server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
@@ -60,8 +46,8 @@ server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.sele
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
-logging.info("Server started")
-logging.info("Started with configs %s", server_configs.__dict__)
+logger.info("Server started")
+logger.info("Started with configs %s", server_configs.__dict__)
 
 map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs.mapboxAccessToken)]
 last_image = None
@@ -95,7 +81,7 @@ def configs() -> Response:
     if 'proxyAddress' in new_configs:
         server_configs.proxyAddress = new_configs['proxyAddress']
 
-    logging.info("Updated configs %s", server_configs.__dict__)
+    logger.info("Updated configs %s", server_configs.__dict__)
 
     return jsonify(server_configs)
 
@@ -178,7 +164,7 @@ def tiles(path: str) -> Response:
     return response
 
 
-def download_from_url(url):
+def download_from_url(url, map_provider):
     content = cache.get(url)
 
     if content is None:
@@ -189,10 +175,10 @@ def download_from_url(url):
 
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
-        if resp.status_code != 200:
+        content = resp.content
+        if (resp.status_code != 200) or map_provider.is_invalid_content(content):
             return Response(status=404)
 
-        content = resp.content
         cache.set(url, content)
     else:
         print("Use cached:", url)
@@ -203,7 +189,7 @@ def download_from_url(url):
 def tiles_normal_lod(quadkey, map_provider):
     url = map_provider.map(quadkey)
 
-    return download_from_url(url)
+    return download_from_url(url, map_provider)
 
 
 def tiles_high_lod(quadkey, map_provider):
@@ -212,7 +198,7 @@ def tiles_high_lod(quadkey, map_provider):
     images = {}
 
     with ThreadPoolExecutor() as executor:
-        future_to_url = {executor.submit(download_from_url, url): url for url in urls}
+        future_to_url = {executor.submit(download_from_url, url, map_provider): url for url in urls}
 
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
