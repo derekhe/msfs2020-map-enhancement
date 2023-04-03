@@ -21,7 +21,7 @@ from PIL import Image, ImageEnhance
 from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
 from flask import Flask, make_response, Response, request, jsonify
 import argparse
-from diskcache import Cache
+from diskcache import Cache, FanoutCache
 from concurrent.futures.thread import ThreadPoolExecutor
 from log import logger
 
@@ -32,6 +32,7 @@ parser.add_argument('--proxyAddress', default=None, required=False)
 parser.add_argument('--selectedServer', default="mt.google.com")
 parser.add_argument('--cacheLocation', default="./cache", required=False)
 parser.add_argument('--cacheEnabled', default=False, required=False)
+parser.add_argument('--cacheSizeGB', default=10, required=False)
 parser.add_argument('--mapboxAccessToken', default="", required=False)
 parser.add_argument('--enableHighLOD', default=False, required=False)
 argv = parser.parse_args()
@@ -41,6 +42,7 @@ app: Flask = Flask(__name__)
 server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
                         cacheLocation=argv.cacheLocation,
                         cacheEnabled=argv.cacheEnabled == 'true',
+                        cacheSizeGB=argv.cacheSizeGB,
                         mapboxAccessToken=argv.mapboxAccessToken,
                         enableHighLOD=argv.enableHighLOD == 'true')
 
@@ -53,8 +55,8 @@ map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_con
 last_image = None
 
 if server_configs.cacheEnabled:
-    cache = Cache(
-        server_configs.cacheLocation, size_limit=int(10) * 1024 * 1024 * 1024, shards=10)
+    cache = FanoutCache(
+        server_configs.cacheLocation, size_limit=int(server_configs.cacheSizeGB) * 1024 * 1024 * 1024, shards=20)
 else:
     cache = DummyCache()
 
