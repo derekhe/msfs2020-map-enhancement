@@ -2,6 +2,12 @@ import ast
 import concurrent
 import os
 import sys
+from threading import Thread
+
+from shapely import geometry
+from pygeotile.point import Point
+from pygeotile.tile import Tile
+from shapely.geometry import Polygon
 
 sys.path.append(os.path.curdir)
 
@@ -53,6 +59,7 @@ logger.info("Started with configs %s", server_configs.__dict__)
 
 map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs.mapboxAccessToken)]
 last_image = None
+offline_download_thread = None
 
 if server_configs.cacheEnabled:
     cache = FanoutCache(
@@ -141,6 +148,7 @@ def tiles(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
 
     return response
 
+
 @app.route("/cache/<tile_x>/<tile_y>/<level_of_detail>")
 def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
     url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'
@@ -150,7 +158,7 @@ def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
         return Response(status=404)
 
     im = Image.new('RGB', (256, 256))
-    im.paste((0,0,255), [0, 0, 256,256])
+    im.paste((255, 0, 255), [0, 0, 256, 256])
 
     img_byte_arr = io.BytesIO()
     im.save(img_byte_arr, format='jpeg')
@@ -168,15 +176,14 @@ def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
 
     return response
 
+
 @app.route("/tiles/a<path>")
 def quad_tiles(path: str) -> Response:
     quadkey = re.findall(r"(\d+).jpeg", path)[0]
-    map_provider = list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
-
     if server_configs.enableHighLOD:
-        content = tiles_high_lod(quadkey, map_provider)
+        content = tiles_high_lod(quadkey)
     else:
-        content = tiles_normal_lod(quadkey, map_provider)
+        content = tiles_normal_lod(quadkey)
 
     try:
         im = Image.open(io.BytesIO(content))
@@ -206,13 +213,17 @@ def quad_tiles(path: str) -> Response:
 
     global server_statics
     server_statics.numOfImageLoaded += 1
-    server_statics.lastLoadingImageUrl = map_provider.map(quadkey)
+    server_statics.lastLoadingImageUrl = get_selected_map_provider().quadkey_url(quadkey)
     server_statics.lastLoadTime = datetime.utcnow()
 
     return response
 
 
-def download_from_url(url, map_provider):
+def get_selected_map_provider():
+    return list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
+
+
+def download_from_url(url):
     content = cache.get(url)
 
     if content is None:
@@ -224,7 +235,7 @@ def download_from_url(url, map_provider):
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
         content = resp.content
-        if (resp.status_code != 200) or map_provider.is_invalid_content(content):
+        if (resp.status_code != 200) or get_selected_map_provider().is_invalid_content(content):
             return Response(status=404)
 
         cache.set(url, content)
@@ -234,19 +245,17 @@ def download_from_url(url, map_provider):
     return content
 
 
-def tiles_normal_lod(quadkey, map_provider):
-    url = map_provider.map(quadkey)
-
-    return download_from_url(url, map_provider)
+def tiles_normal_lod(quadkey):
+    return download_from_url(get_selected_map_provider().quadkey_url(quadkey))
 
 
-def tiles_high_lod(quadkey, map_provider):
-    urls = map_provider.next_level_urls(quadkey)
+def tiles_high_lod(quadkey):
+    urls = get_selected_map_provider().next_level_urls(quadkey)
 
     images = {}
 
     with ThreadPoolExecutor() as executor:
-        future_to_url = {executor.submit(download_from_url, url, map_provider): url for url in urls}
+        future_to_url = {executor.submit(download_from_url, url): url for url in urls}
 
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
@@ -266,6 +275,40 @@ def tiles_high_lod(quadkey, map_provider):
     img_byte_arr = img_byte_arr.getvalue()
 
     return img_byte_arr
+
+
+@app.route("/offlinedownload", methods=['POST'])
+def offline_download():
+    body = request.get_json()
+
+    regions = []
+    for feature in body['features']:
+        regions.append(feature['geometry']['coordinates'][0])
+
+    offline_download_thread = Thread(target=offline_download_worker, args=(regions,))
+    offline_download_thread.start()
+
+    return jsonify({})
+
+
+def offline_download_worker(regions):
+    for region in regions:
+        polygon = Polygon(region)
+        with ThreadPoolExecutor(max_workers=50) as exec:
+            for zoom_level in range(6, 16):
+                left_top = Tile.for_latitude_longitude(polygon.bounds[1], polygon.bounds[0], zoom_level)
+                right_bottom = Tile.for_latitude_longitude(polygon.bounds[3], polygon.bounds[2], zoom_level)
+                print(left_top.google, right_bottom.google)
+                for tile_x in range(left_top.google[0], right_bottom.google[0] + 1):
+                    for tile_y in range(right_bottom.google[1], left_top.google[1] + 1):
+                        point_min, point_max = Tile.from_google(tile_x, tile_y, zoom_level).bounds
+
+                        pmin = geometry.Point(point_min.longitude, point_min.latitude)
+                        pmax = geometry.Point(point_max.longitude, point_max.latitude)
+
+                        if polygon.contains(pmin) or polygon.contains(pmax):
+                            exec.submit(download_from_url,
+                                        get_selected_map_provider().tile_url(tile_x, tile_y, zoom_level))
 
 
 app.run(port=39871, threaded=True)
