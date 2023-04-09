@@ -33,7 +33,7 @@
     "koa-router": "^10.1.1",
     "leaflet": "^1.7.1",
     "minimist": "^1.2.6",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "sharp": "^0.29.3",
     "tcp-port-used": "^1.0.2",
     "vue": "^3.0.0",
