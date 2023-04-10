@@ -93,16 +93,16 @@ class ArcGIS(TileBasedMapProvider):
     def __init__(self):
         super().__init__("ArcGIS")
         self.emptyContent = None
-        self.sig = hashlib.md5()
 
     def tile_url(self, tile_x, tile_y, level_of_detail):
         return f"https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{level_of_detail}/{tile_y}/{tile_x}"
 
     def is_invalid_content(self, content):
+        self.sig = hashlib.md5()
         self.sig.update(content)
         hexdigest = self.sig.hexdigest()
 
-        logger.info("Check sum", hexdigest)
+        logger.info("Check sum %s", hexdigest)
         return hexdigest == 'f27d9de7f80c13501f470595e327aa6d'
 
 
