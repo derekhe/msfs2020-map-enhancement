@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-col h-screen">
-    <Navbar/>
+    <Navbar />
     <div class="flex h-full">
-      <Menu/>
+      <Menu @menu-clicked="selectMenu" />
       <div class="grow">
-        <div class="container mx-auto p-8" >
-          <Start v-if="store.selectedMenu === selectedMenu.HOME "/>
-          <Options v-if="store.selectedMenu === selectedMenu.OPTION" />
-          <About v-if="store.selectedMenu === selectedMenu.ABOUT"/>
+        <div class="container mx-auto p-8">
+          <Start v-if="activeMenu === MenuItems.HOME" />
+          <Options v-if="activeMenu === MenuItems.OPTION" />
+          <About v-if="activeMenu === MenuItems.ABOUT" />
         </div>
       </div>
     </div>
@@ -20,16 +20,22 @@ import Menu from "./components/Menu.vue";
 import Start from "./components/Home/Home.vue";
 import Options from "./components/Options/Options.vue";
 import About from "./components/Home/About.vue";
-import {uiState, selectedMenu} from "./uiState"
+import { MenuItems } from "./const";
 
 export default {
-  components: {Start, Navbar, Menu, Options, About},
+  components: { Start, Navbar, Menu, Options, About },
   data() {
     return {
-      store: uiState, selectedMenu
+      MenuItems: MenuItems,
+      activeMenu: MenuItems.HOME
+    };
+  },
+  methods: {
+    selectMenu(selectedMenu) {
+      this.activeMenu = selectedMenu;
     }
   }
-}
+};
 </script>
 
 <style>
