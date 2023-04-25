@@ -1,66 +1,47 @@
 {
-  "name": "msfs2020-map-enhancement",
-  "author": {
-    "name": "He Sicong"
-  },
-  "description": "Microsoft Flight Simulator 2020 map enhancement tool",
-  "version": "4.2.3",
-  "private": true,
+  "name": "electron-vue-vite",
+  "version": "1.0.0",
+  "main": "dist/main/index.cjs",
+  "author": "草鞋没号 <308487730@qq.com>",
+  "license": "MIT",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build",
-    "electron:serve": "vue-cli-service electron:serve",
-    "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+    "dev": "node scripts/watch.mjs",
+    "prebuild": "vue-tsc --noEmit --p packages/renderer/tsconfig.json && node scripts/build.mjs",
+    "build": "electron-builder",
+    "init": "git config core.hooksPath .git/hooks/ && rm -rf .git/hooks && npx simple-git-hooks",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headless": "npx playwright test --headed"
   },
-  "main": "background.js",
-  "dependencies": {
-    "@geoman-io/leaflet-geoman-free": "^2.11.4",
-    "@vicons/ionicons5": "^0.11.0",
-    "core-js": "^3.6.5",
-    "dns": "^0.2.2",
-    "electron-log": "^4.4.1",
-    "electron-store": "^8.0.1",
-    "electron-updater": "^4.6.1",
-    "got": "^11.8.3",
-    "hpagent": "^0.1.2",
-    "http2": "^3.3.7",
-    "leaflet": "^1.7.1",
-    "minimist": "^1.2.6",
-    "moment": "^2.29.2",
-    "tcp-port-used": "^1.0.2",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0-0",
-    "vuex": "^4.0.0-0"
+  "engines": {
+    "node": ">=14.17.0"
   },
   "devDependencies": {
-    "@types/electron-devtools-installer": "^2.2.0",
-    "@typescript-eslint/eslint-plugin": "^4.18.0",
-    "@typescript-eslint/parser": "^4.18.0",
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-plugin-typescript": "~4.5.0",
-    "@vue/cli-plugin-vuex": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
-    "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^7.0.0",
-    "electron": "13.6.6",
-    "electron-builder": "^22.14.12",
-    "electron-devtools-installer": "^3.1.0",
-    "electron-rebuild": "^3.2.7",
-    "eslint": "^6.7.2",
-    "eslint-plugin-prettier": "^3.3.1",
-    "eslint-plugin-vue": "^7.0.0",
-    "naive-ui": "^2.21.3",
-    "prettier": "^2.2.1",
-    "sass": "^1.26.5",
-    "sass-loader": "^8.0.2",
-    "typescript": "~4.1.5",
-    "vfonts": "^0.1.0",
-    "vue-cli-plugin-electron-builder": "~2.1.1"
-  }
+    "@playwright/test": "^1.20.2",
+    "@tailwindcss/typography": "^0.5.2",
+    "@vitejs/plugin-vue": "^2.1.0",
+    "daisyui": "^2.6.0",
+    "electron": "18.0.2",
+    "electron-builder": "^23.0.3",
+    "nano-staged": "^0.6.0",
+    "postcss": "^8.4.7",
+    "simple-git-hooks": "^2.7.0",
+    "tailwindcss": "^3.0.23",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.1",
+    "vite-plugin-electron": "^0.4.2",
+    "vite-plugin-resolve": "^2.0.1",
+    "vue": "^3.2.31",
+    "vue-tsc": "^0.31.1"
+  },
+  "env": {
+    "VITE_DEV_SERVER_HOST": "127.0.0.1",
+    "VITE_DEV_SERVER_PORT": 3344
+  },
+  "keywords": [
+    "electron",
+    "rollup",
+    "vite",
+    "vue3",
+    "vue"
+  ]
 }

@@ -1,6 +1,13 @@
-.DS_Store
 node_modules
-/dist
+.DS_Store
+dist
+dist-ssr
+*.local
+.debug.env
+
+tmp
+**/.tmp
+release
 
 
 # local env files

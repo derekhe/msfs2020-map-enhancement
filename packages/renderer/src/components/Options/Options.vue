@@ -1,0 +1,25 @@
+<template>
+  <div class="space-y-4">
+    <GameOptions/>
+    <MapOptions/>
+    <CacheOptions/>
+    <ProxySettings/>
+  </div>
+</template>
+
+<script>
+
+import GameOptions from "./GameOptions.vue";
+import MapOptions from "./MapOptions.vue";
+import CacheOptions from "./CacheOptions.vue";
+import ProxySettings from "./ProxySettings.vue";
+
+export default {
+  name: "Options",
+  components: {MapOptions, GameOptions, CacheOptions, ProxySettings}
+}
+</script>
+
+<style scoped>
+
+</style>
