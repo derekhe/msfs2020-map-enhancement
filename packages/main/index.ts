@@ -1,4 +1,3 @@
-
 import { app, BrowserWindow, shell, protocol, ipcMain } from "electron";
 import { release } from "os";
 import { join } from "path";
@@ -7,7 +6,7 @@ import log from "electron-log";
 import {
   EVENT_CHECK_PORT,
   EVENT_CHECK_UPDATE,
-  EVENT_START_GAME,
+  EVENT_START_GAME, EVENT_START_HOSTS_PATH,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER
 } from "../consts/custom-events";
@@ -63,7 +62,7 @@ async function createWindow() {
     const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_DEV_SERVER_PORT"]}`;
 
     win.loadURL(url);
-    win.webContents.openDevTools()
+    //win.webContents.openDevTools()
   }
 
   // Test active push message to Renderer-process
@@ -75,11 +74,6 @@ async function createWindow() {
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
-  });
-
-  win.webContents.on("new-window", function(e, url) {
-    e.preventDefault();
-    require("electron").shell.openExternal(url);
   });
 }
 
@@ -126,12 +120,24 @@ ipcMain.handle(EVENT_START_SERVER, async (event, arg) => {
 
   try {
     await addCertificate();
-    patchHostsFile();
     await startMapServer(arg);
     log.info("Start map server success");
     return { success: true };
   } catch (e) {
     log.error("Start map server failed", e);
+    return { success: false, error: e };
+  }
+});
+
+ipcMain.handle(EVENT_START_HOSTS_PATH, async (event, arg) => {
+  log.info("Start hosts path");
+
+  try {
+    await patchHostsFile();
+    log.info("Hosts patched");
+    return { success: true };
+  } catch (e) {
+    log.error("Hosts patch failed");
     return { success: false, error: e };
   }
 });
