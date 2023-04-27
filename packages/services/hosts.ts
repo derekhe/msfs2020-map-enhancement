@@ -11,6 +11,11 @@ export function patchHostsFile(): void {
     ? fs.readFileSync(hostFilePath).toString()
     : "";
 
+  if (hosts.indexOf("kh.ssl.ak.tiles.virtualearth.net") !== -1) {
+    log.info("Already patched, skip");
+    return;
+  }
+
   hosts +=
     "\n127.0.0.1 kh.ssl.ak.tiles.virtualearth.net\r\n127.0.0.1 khstorelive.azureedge.net\r\n";
   fs.writeFileSync(hostFilePath, hosts, {
