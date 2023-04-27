@@ -17,6 +17,10 @@ import { startMapServer, stopServer } from "../services/mapServer";
 import { startGame } from "../services/game";
 import { autoUpdater } from "electron-updater";
 
+import { initialize } from "@electron/remote/main";
+import { enable } from "@electron/remote/dist/src/main/server";
+
+initialize();
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -54,6 +58,8 @@ async function createWindow() {
     width: 1024,
     height: 900
   });
+
+  enable(win.webContents);
 
   if (app.isPackaged) {
     win.loadFile(join(__dirname, "../renderer/index.html"));

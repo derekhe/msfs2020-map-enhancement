@@ -1,7 +1,7 @@
 <template>
   <p>{{ name }}</p>
   <div class="badge badge-info" v-if="serverCheckResult === HEALTH_CHECK.NotStarted">
-    checking not started
+    idle
   </div>
   <div class="badge badge-info" v-if="serverCheckResult === HEALTH_CHECK.Checking">
     checking
