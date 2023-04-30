@@ -29,43 +29,31 @@ import argparse
 from diskcache import FanoutCache
 from concurrent.futures.thread import ThreadPoolExecutor
 from log import logger
+import json
 
 urllib3.disable_warnings()
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--proxyAddress', default=None, required=False)
-parser.add_argument('--selectedServer', default="mt.google.com")
-parser.add_argument('--cacheLocation', default="./cache", required=False)
-parser.add_argument('--cacheEnabled', default=False, required=False)
-parser.add_argument('--cacheSizeGB', default=10, required=False)
-parser.add_argument('--mapboxAccessToken', default="", required=False)
-parser.add_argument('--enableHighLOD', default=False, required=False)
-argv = parser.parse_args()
-
 app: Flask = Flask(__name__)
+map_providers = None
+last_image = None
+offline_download_thread = None
+cache = DummyCache()
 
-server_configs = Config(proxyAddress=argv.proxyAddress, selectedServer=argv.selectedServer,
-                        cacheLocation=argv.cacheLocation,
-                        cacheEnabled=argv.cacheEnabled == 'true',
-                        cacheSizeGB=argv.cacheSizeGB,
-                        mapboxAccessToken=argv.mapboxAccessToken,
-                        enableHighLOD=argv.enableHighLOD == 'true')
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', default=None, required=False)
+argv = parser.parse_args()
 
 server_statics = Statics(numOfImageLoaded=0, lastLoadingImageUrl="", lastLoadTime=datetime.utcnow())
 
-logger.info("Server started")
-logger.info("Started with configs %s", server_configs.__dict__)
+def config_server(server_configs):
+    global map_providers, cache
+    map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs['mapboxAccessToken'])]
 
-map_providers = [MTGoogle(), KHMGoogle(), ArcGIS(), BingMap(), MapBox(server_configs.mapboxAccessToken)]
-last_image = None
-offline_download_thread = None
-
-if server_configs.cacheEnabled:
-    cache = FanoutCache(
-        server_configs.cacheLocation, size_limit=int(server_configs.cacheSizeGB) * 1024 * 1024 * 1024, shards=20)
-else:
-    cache = DummyCache()
-
+    if server_configs['cacheEnabled']:
+        cache = FanoutCache(
+            server_configs['cacheLocation'], size_limit=int(server_configs['cacheSizeGB']) * 1024 * 1024 * 1024, shards=20)
+    else:
+        cache = DummyCache()
 
 @app.route("/health")
 def health() -> str:
@@ -81,16 +69,11 @@ def clear_cache() -> Response:
 @app.route("/configs", methods=['POST'])
 def configs() -> Response:
     global server_configs
-    new_configs = request.get_json(force=True)
 
-    if 'selectedServer' in new_configs:
-        server_configs.selectedServer = new_configs['selectedServer']
+    server_configs = request.get_json(force=True)
+    logger.info("Received config %s", server_configs)
 
-    if 'proxyAddress' in new_configs:
-        server_configs.proxyAddress = new_configs['proxyAddress']
-
-    logger.info("Updated configs %s", server_configs.__dict__)
-
+    config_server(server_configs)
     return jsonify(server_configs)
 
 
@@ -118,8 +101,9 @@ def mtx(dummy: str = None) -> Response:
     url = request.url.replace(request.host, "kh.ssl.ak.tiles.virtualearth.net.edgekey.net").replace("http://",
                                                                                                     "https://")
 
+    proxy_address = server_configs['proxyAddress']
     remote_response = requests.get(
-        url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+        url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
         verify=False, headers=request_header)
 
     response = make_response(remote_response.content)
@@ -131,8 +115,9 @@ def mtx(dummy: str = None) -> Response:
 @app.route("/tiles/<tile_x>/<tile_y>/<level_of_detail>")
 def tiles(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
     url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'
+    proxy_address = server_configs['proxyAddress']
     content = requests.get(
-        url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+        url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
         verify=False).content
 
     response = make_response(content)
@@ -179,7 +164,7 @@ def cache_layer(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
 @app.route("/tiles/a<path>")
 def quad_tiles(path: str) -> Response:
     quadkey = re.findall(r"(\d+).jpeg", path)[0]
-    if server_configs.enableHighLOD:
+    if server_configs['enableHighLOD']:
         content = tiles_high_lod(quadkey)
     else:
         content = tiles_normal_lod(quadkey)
@@ -219,16 +204,17 @@ def quad_tiles(path: str) -> Response:
 
 
 def get_selected_map_provider():
-    return list(filter(lambda x: x.name == server_configs.selectedServer, map_providers))[0]
+    return list(filter(lambda x: x.name == server_configs['selectedServer'], map_providers))[0]
 
 
 def download_from_url(url):
     content = cache.get(url)
 
     if content is None:
-        logger.info("Downloading from: %s, %s", url, server_configs.proxyAddress)
+        proxy_address = server_configs['proxyAddress']
+        logger.info("Downloading from: %s, %s", url, proxy_address)
         resp = requests.get(
-            url, proxies={"https": server_configs.proxyAddress, "http": server_configs.proxyAddress}, timeout=30,
+            url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
             verify=False)
 
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
@@ -308,6 +294,10 @@ def offline_download_worker(regions):
                         if polygon.contains(pmin) or polygon.contains(pmax):
                             exec.submit(download_from_url,
                                         get_selected_map_provider().tile_url(tile_x, tile_y, zoom_level))
+logger.info("Started with config %s", argv)
+if argv.config is not None:
+    server_configs = json.loads(argv.config)
+    logger.info("Start with %s", server_configs)
+    config_server(server_configs)
 
-
-app.run(port=39871, threaded=True)
+app.run(port=39871, threaded=True, debug=True)

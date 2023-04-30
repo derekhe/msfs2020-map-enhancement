@@ -55,8 +55,10 @@
   ],
   "dependencies": {
     "@electron/remote": "^2.0.8",
+    "got": "^11.8.3",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
+    "moment": "^2.29.3",
     "pinia": "^2.0.13"
   }
 }
