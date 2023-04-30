@@ -5,20 +5,20 @@
       <div class="form-control">
         <label class="label cursor-pointer">
           <span class="label-text">Auto start mod and game</span>
-          <input type="checkbox" checked="checked" class="checkbox">
+          <input type="checkbox" class="checkbox" v-model="optionStore.autoStartGame">
         </label>
       </div>
       <p>Game Store</p>
       <div class="form-control">
         <label class="label cursor-pointer">
           <span class="label-text">MS Store</span>
-          <input type="radio" name="radio-6" class="radio checked:bg-red-500" checked>
+          <input type="radio" name="radio-6" value="MS Store" class="radio checked:bg-red-500" v-model="optionStore.gameStore">
         </label>
       </div>
       <div class="form-control">
         <label class="label cursor-pointer">
           <span class="label-text">Steam</span>
-          <input type="radio" name="radio-6" class="radio checked:bg-blue-500" checked>
+          <input type="radio" name="radio-6" value="Steam" class="radio checked:bg-blue-500" v-model="optionStore.gameStore">
         </label>
       </div>
 
@@ -27,8 +27,15 @@
 </template>
 
 <script>
+
+import { useOptionStore } from "../../stores/optionStore";
+
 export default {
-  name: "GameOptions"
+  name: "GameOptions",
+  setup() {
+    let optionStore = useOptionStore();
+    return { optionStore };
+  }
 }
 </script>
 

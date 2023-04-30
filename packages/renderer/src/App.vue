@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col h-screen">
-    <Navbar />
+    <Navbar/>
     <div class="flex h-full">
       <Menu @menu-clicked="selectMenu" />
       <div class="grow">
-        <div class="container p-8 overflow-y-auto">
-          <Start v-if="activeMenu === MenuItems.HOME" @startServer="startServer" />
+        <div class="container p-4 overflow-y-auto">
+          <Start v-if="activeMenu === MenuItems.HOME" @startServer="startServer" @stopServer="stopServer" />
           <Options class="h-[42rem]" v-if="activeMenu === MenuItems.OPTION" />
           <About v-if="activeMenu === MenuItems.ABOUT" />
         </div>
@@ -24,56 +24,78 @@
 <script>
 import Navbar from "./components/Navbar.vue";
 import Menu from "./components/Menu.vue";
-import Start from "./components/Home/Home.vue";
+import Start from "./components/Home/Start.vue";
 import Options from "./components/Options/Options.vue";
 import About from "./components/Home/About.vue";
 import ServerStatus from "./components/common/ServerStatus.vue";
 import { MenuItems } from "./const";
-import { EVENT_CHECK_PORT, EVENT_START_HOSTS_PATH, EVENT_START_SERVER } from "../../consts/custom-events";
-import { globalOptions } from "./globalOptions";
+import {
+  EVENT_START_SERVER,
+  EVENT_STOP_SERVER
+} from "../../consts/custom-events";
 import log from "electron-log";
 import Alert from "./components/common/Alert.vue";
 import got from "got";
-import { HEALTH_CHECK } from "../../consts/constants";
+import { STATUS } from "../../consts/constants";
+import { useOptionStore } from "./stores/optionStore";
+import Store from "electron-store";
 
 export default {
   components: { Alert, Start, Navbar, Menu, Options, About, ServerStatus },
+  setup() {
+    const optionStore = useOptionStore();
+    return { optionStore };
+  },
   data() {
     return {
       MenuItems: MenuItems,
       activeMenu: MenuItems.HOME,
-      globalOptions,
       errorMessage: "",
-      imageAccessHealthCheckResult: HEALTH_CHECK.NotStarted,
-      nginxServerHealthCheckResult: HEALTH_CHECK.NotStarted,
-      HEALTH_CHECK
+      imageAccessHealthCheckResult: STATUS.NotStarted,
+      nginxServerHealthCheckResult: STATUS.NotStarted,
+      STATUS
     };
   },
   methods: {
     selectMenu(selectedMenu) {
       this.activeMenu = selectedMenu;
     },
-    async startServer(serverName) {
-      console.log("Fly with", serverName);
-      globalOptions.selectedServer = serverName;
-
+    async stopServer() {
       const result = await window.ipcRenderer
-        .invoke(EVENT_START_HOSTS_PATH);
-      log.info("Path result", result);
+        .invoke(EVENT_STOP_SERVER);
 
       if (!result) {
         this.errorMessage = result.error;
       }
 
+      this.nginxServerHealthCheckResult = STATUS.NotStarted;
+      this.imageAccessHealthCheckResult = STATUS.NotStarted;
+    },
+    async startServer() {
+      log.info("Starting mod");
+
+      const result = await window.ipcRenderer
+        .invoke(EVENT_START_SERVER, JSON.parse(JSON.stringify(this.optionStore)));
+      log.info("Start mod result", result);
+
+      if (!result) {
+        this.hasAlert = true;
+        this.errorMessage = result.error;
+      }
+
+      await this.checkImageAccess();
       await this.checkNginxServer();
     },
     async checkNginxServer() {
-      this.nginxServerHealthCheckResult = HEALTH_CHECK.Checking;
+      this.nginxServerHealthCheckResult = STATUS.Checking;
       const url = "https://khstorelive.azureedge.net/results/v1.20.0/coverage_maps/lod_8/12202100.cov?version=3";
 
       let options = {
         timeout: {
-          request: 15 * 1000
+          request: 3 * 1000
+        },
+        retry: {
+          limit: 3
         },
         rejectUnauthorized: false
       };
@@ -86,23 +108,26 @@ export default {
           log.info("Nginx server check result", ex.response.statusCode);
           if (ex.response.statusCode === 404) {
             log.info("Nginx server check passed");
-            this.nginxServerHealthCheckResult = HEALTH_CHECK.Passed;
+            this.nginxServerHealthCheckResult = STATUS.Passed;
           } else {
-            this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
+            this.nginxServerHealthCheckResult = STATUS.Failed;
           }
         } else {
           log.error("Nginx server check result", ex);
-          this.nginxServerHealthCheckResult = HEALTH_CHECK.Failed;
+          this.nginxServerHealthCheckResult = STATUS.Failed;
         }
       }
     },
     async checkImageAccess() {
-      this.imageAccessHealthCheckResult = HEALTH_CHECK.Checking;
+      this.imageAccessHealthCheckResult = STATUS.Checking;
       const url = `http://localhost:39871/tiles/akh12101.jpeg?n=z&g=9580`;
 
       let options = {
         timeout: {
-          request: 5 * 1000
+          request: 3 * 1000
+        },
+        retry: {
+          limit: 3
         },
         rejectUnauthorized: false
       };
@@ -113,28 +138,22 @@ export default {
         log.info("image server response", resp.statusCode);
 
         if (resp.statusCode === 200) {
-          this.imageAccessHealthCheckResult = HEALTH_CHECK.Passed;
+          this.imageAccessHealthCheckResult = STATUS.Passed;
         } else {
-          this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
+          this.imageAccessHealthCheckResult = STATUS.Failed;
         }
       } catch (ex) {
-        this.imageAccessHealthCheckResult = HEALTH_CHECK.Failed;
+        this.imageAccessHealthCheckResult = STATUS.Failed;
         log.error("Image server error", ex);
       }
-    },
+    }
   },
   async mounted() {
-    log.info("Starting mod");
-    const result = await window.ipcRenderer
-      .invoke(EVENT_START_SERVER, JSON.parse(JSON.stringify(globalOptions)));
-    log.info("Start mod result", result);
-
-    if (!result) {
-      this.hasAlert = true;
-      this.errorMessage = result.error;
-    }
-
-    await this.checkImageAccess();
+    const store = new Store();
+    this.optionStore.$subscribe((mutation, state) => {
+      console.log("Save state");
+      store.set("config", state);
+    });
   }
 };
 </script>

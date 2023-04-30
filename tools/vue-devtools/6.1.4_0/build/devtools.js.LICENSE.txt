@@ -1,0 +1,252 @@
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+/*!
+ * @pixi/accessibility - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/accessibility is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/app - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/app is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-display - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-display is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-extract - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-extract is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-graphics - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-graphics is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-mesh - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-mesh is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-particle-container - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-particle-container is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-sprite - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-sprite is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/canvas-text - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/canvas-text is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/constants - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/constants is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/core - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/core is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/display - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/display is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/events - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/events is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/extract - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/extract is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/filter-displacement - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/filter-displacement is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/math - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/math is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/mesh-extras - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/mesh-extras is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/mixin-get-child-by-name - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/mixin-get-child-by-name is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/mixin-get-global-position - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/mixin-get-global-position is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/polyfill - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/polyfill is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/prepare - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/prepare is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/runner - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/runner is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/settings - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/settings is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/ticker - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/ticker is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/unsafe-eval - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/unsafe-eval is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * @pixi/utils - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * @pixi/utils is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * Vue.js v2.6.14
+ * (c) 2014-2021 Evan You
+ * Released under the MIT License.
+ */
+
+/*!
+ * pixi.js - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * pixi.js is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
+ * pixi.js-legacy - v6.2.2
+ * Compiled Wed, 26 Jan 2022 16:23:27 UTC
+ *
+ * pixi.js-legacy is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+
+/*! https://mths.be/punycode v1.3.2 by @mathias */

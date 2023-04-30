@@ -1,7 +1,7 @@
 <template>
   <p>{{ name }}</p>
   <div class="badge badge-info" v-if="serverCheckResult === HEALTH_CHECK.NotStarted">
-    idle
+    not started
   </div>
   <div class="badge badge-info" v-if="serverCheckResult === HEALTH_CHECK.Checking">
     checking
@@ -15,14 +15,14 @@
 </template>
 
 <script>
-import { HEALTH_CHECK } from "../../../../consts/constants";
+import { STATUS } from "../../../../consts/constants";
 
 export default {
   name: "ServerStatus",
   props: ["name", "serverCheckResult"],
   data() {
     return {
-      HEALTH_CHECK
+      HEALTH_CHECK: STATUS
     };
   }
 };

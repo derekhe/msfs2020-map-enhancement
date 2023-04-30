@@ -5,7 +5,7 @@
       <div class="form-control">
         <label class="label cursor-pointer">
           <span class="label-text">High LOD</span>
-          <input type="checkbox" checked="checked" class="checkbox">
+          <input type="checkbox" class="checkbox" v-model="optionStore.enableHighLOD">
         </label>
       </div>
     </div>
@@ -13,8 +13,14 @@
 </template>
 
 <script>
+import { useOptionStore } from "../../stores/optionStore";
+
 export default {
-  name: "MapOptions"
+  name: "MapOptions",
+  setup() {
+    let optionStore = useOptionStore();
+    return { optionStore };
+  }
 }
 </script>
 

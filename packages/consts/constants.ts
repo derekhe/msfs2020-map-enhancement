@@ -1,4 +1,4 @@
-export enum HEALTH_CHECK{
+export enum STATUS{
   Checking, Passed, Failed, NotStarted
 }
 export enum SERVER_STATUS {

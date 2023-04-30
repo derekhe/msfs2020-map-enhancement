@@ -1,12 +1,11 @@
-import ast
+import concurrent
 import concurrent
 import os
 import sys
 from threading import Thread
 
-from shapely import geometry
-from pygeotile.point import Point
 from pygeotile.tile import Tile
+from shapely import geometry
 from shapely.geometry import Polygon
 
 sys.path.append(os.path.curdir)
@@ -27,7 +26,7 @@ from PIL import Image, ImageEnhance
 from providers import MTGoogle, KHMGoogle, ArcGIS, BingMap, MapBox
 from flask import Flask, make_response, Response, request, jsonify
 import argparse
-from diskcache import Cache, FanoutCache
+from diskcache import FanoutCache
 from concurrent.futures.thread import ThreadPoolExecutor
 from log import logger
 
