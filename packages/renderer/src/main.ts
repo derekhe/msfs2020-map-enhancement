@@ -1,11 +1,11 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import { createPinia } from 'pinia'
+import { createApp } from "vue";
+import App from "./App.vue";
+import { createPinia } from "pinia";
+import mitt from "mitt";
 
-import mitt from 'mitt'
-export const emitter = mitt()
-
-createApp(App)
+const app = createApp(App)
+app.config.globalProperties.$eventBus = mitt()
+app
   .use(createPinia())
-  .mount('#app')
-  .$nextTick(window.removeLoading)
+  .mount("#app")
+  .$nextTick(window.removeLoading);

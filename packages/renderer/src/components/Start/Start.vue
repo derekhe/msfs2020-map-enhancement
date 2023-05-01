@@ -70,6 +70,11 @@ export default {
       return this.statusStore.nginxServerHealthCheckResult === STATUS.Passed && this.statusStore.imageAccessHealthCheckResult === STATUS.Passed;
     }
   },
+  watch: {
+    "optionStore.selectedServer": async function() {
+      await this.optionStore.updateServerConfig();
+    }
+  },
   methods: {
     async startServer() {
       log.info("Starting mod");
@@ -78,9 +83,10 @@ export default {
         .invoke(EVENT_START_SERVER, JSON.parse(JSON.stringify(this.optionStore)));
       log.info("Start mod result", result);
 
-      if (!result) {
-        this.hasAlert = true;
-        this.errorMessage = result.error;
+      if (!result.success) {
+        window.open("https://github.com/derekhe/msfs2020-map-enhancement/wiki/FAQ", "_blank");
+        this.$eventBus.emit("show-alert", { message: result.error });
+        return;
       }
 
       await this.checkImageAccess();
@@ -90,7 +96,7 @@ export default {
       const result = await window.ipcRenderer
         .invoke(EVENT_STOP_SERVER);
 
-      if (!result) {
+      if (!result.success) {
         this.errorMessage = result.error;
       }
 

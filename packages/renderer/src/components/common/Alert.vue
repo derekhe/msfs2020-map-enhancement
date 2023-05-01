@@ -19,9 +19,9 @@ export default {
     "enabled": false,
     "message": ""
   },
-  computed:{
-    shouldEnable(){
-      return this.enabled && this.message !== '';
+  computed: {
+    shouldEnable() {
+      return this.enabled && this.message !== "";
     }
   }
 };
