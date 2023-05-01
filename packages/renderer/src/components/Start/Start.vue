@@ -33,13 +33,13 @@
 
 <script>
 
-import { MapProviders } from "../../const";
+import { FAQ_PAGE_URL, MapProviders } from "../../const";
 import { _ } from "lodash";
 import { useOptionStore } from "../../stores/optionStore";
 import RuntimeInfo from "./RuntimeInfo.vue";
 import { STATUS } from "../../../../consts/constants";
 import log from "electron-log";
-import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "../../../../consts/custom-events";
+import { EVENT_START_GAME, EVENT_START_SERVER, EVENT_STOP_SERVER } from "../../../../consts/custom-events";
 import got from "got";
 import { useStatusStore } from "../../stores/statusStore";
 import FirstTime from "./FirstTime.vue";
@@ -87,13 +87,20 @@ export default {
       log.info("Start mod result", result);
 
       if (!result.success) {
-        window.open("https://github.com/derekhe/msfs2020-map-enhancement/wiki/FAQ", "_blank");
-        this.$eventBus.emit("show-alert", { message: result.error });
+        window.open(FAQ_PAGE_URL, "_blank");
+        this.$eventBus.emit("show-alert", result.error.message);
         return;
       }
 
       await this.checkImageAccess();
       await this.checkNginxServer();
+
+      if (this.optionStore.autoStartGame) {
+        await window.ipcRenderer
+          .invoke(EVENT_START_GAME, {
+            distributor: this.optionStore.gameStore
+          });
+      }
     },
     async stopServer() {
       const result = await window.ipcRenderer
