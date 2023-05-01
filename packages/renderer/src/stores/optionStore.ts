@@ -6,13 +6,14 @@ import log from "electron-log";
 const defaultConfig = {
   autoStartGame: false,
   gameStore: "MS Store",
-  selectedServer: "Bing (Latest)",
+  selectedServer: "mt.google.com",
   mapboxAccessToken: null,
   enableHighLOD: false,
   proxyAddress: null,
   cacheLocation: "D:\\cache",
   cacheEnabled: false,
-  cacheSizeGB: 10
+  cacheSizeGB: 10,
+  firstTime: true
 };
 
 const store = new Store();
@@ -25,6 +26,7 @@ export const useOptionStore = defineStore({
   },
   actions: {
     reset() {
+      log.info("Clearing local state")
       store.clear();
     },
     async updateServerConfig() {

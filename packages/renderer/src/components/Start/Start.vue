@@ -12,7 +12,7 @@
         <p>{{ description }}</p>
       </div>
     </div>
-
+    <FirstTime />
     <div class="flex justify-center">
       <div class="form-control w-full max-w-xs">
         <label class="label">
@@ -42,10 +42,11 @@ import log from "electron-log";
 import { EVENT_START_SERVER, EVENT_STOP_SERVER } from "../../../../consts/custom-events";
 import got from "got";
 import { useStatusStore } from "../../stores/statusStore";
+import FirstTime from "./FirstTime.vue";
 
 export default {
   name: "Start",
-  components: { RuntimeInfo },
+  components: { FirstTime, RuntimeInfo },
   emits: ["startServer", "stopServer"],
   data() {
     let optionStore = useOptionStore();
@@ -72,7 +73,9 @@ export default {
   },
   watch: {
     "optionStore.selectedServer": async function() {
-      await this.optionStore.updateServerConfig();
+      if (this.serverCheckSuccess) {
+        await this.optionStore.updateServerConfig();
+      }
     }
   },
   methods: {
