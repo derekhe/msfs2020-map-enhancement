@@ -35,6 +35,9 @@ export const useOptionStore = defineStore({
       await got.post("http://localhost:39871/configs", {
         json: body
       });
+    },
+    toJson(){
+      return JSON.parse(JSON.stringify(this.$state));
     }
   }
 });

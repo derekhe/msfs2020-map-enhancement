@@ -4,7 +4,7 @@
     "name": "He Sicong"
   },
   "description": "Microsoft Flight Simulator 2020 map enhancement tool",
-  "version": "4.2.3",
+  "version": "5.0.0",
   "main": "dist/main/index.cjs",
   "license": "GPL",
   "scripts": {
@@ -19,28 +19,21 @@
     "node": ">=14.17.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.20.2",
-    "@tailwindcss/typography": "^0.5.2",
-    "@vitejs/plugin-vue": "^2.1.0",
-    "daisyui": "^2.6.0",
-    "dns": "^0.2.2",
-    "electron": "18.0.2",
     "electron-builder": "^23.0.3",
-    "electron-log": "^4.4.1",
-    "electron-store": "^8.0.1",
-    "electron-updater": "^4.6.1",
-    "hpagent": "^0.1.2",
+    "electron": "18.0.2",
     "nano-staged": "^0.6.0",
     "postcss": "^8.4.7",
     "simple-git-hooks": "^2.7.0",
-    "tailwindcss": "^3.0.23",
-    "tcp-port-used": "^1.0.2",
-    "typescript": "^4.6.3",
+    "@playwright/test": "^1.20.2",
     "vite": "^2.9.1",
     "vite-plugin-electron": "^0.4.2",
     "vite-plugin-resolve": "^2.0.1",
+    "tailwindcss": "^3.0.23",
+    "typescript": "^4.6.3",
     "vue": "^3.2.31",
-    "vue-tsc": "^0.31.1"
+    "vue-tsc": "^0.31.1",
+    "@tailwindcss/typography": "^0.5.2",
+    "@vitejs/plugin-vue": "^2.1.0"
   },
   "env": {
     "VITE_DEV_SERVER_HOST": "127.0.0.1",
@@ -59,6 +52,13 @@
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
     "moment": "^2.29.3",
-    "pinia": "^2.0.13"
+    "pinia": "^2.0.13",
+    "electron-log": "^4.4.1",
+    "electron-store": "^8.0.1",
+    "electron-updater": "^4.6.1",
+    "tcp-port-used": "^1.0.2",
+    "daisyui": "^2.6.0",
+    "dns": "^0.2.2",
+    "hpagent": "^0.1.2"
   }
 }

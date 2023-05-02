@@ -83,7 +83,7 @@ export default {
       log.info("Starting mod");
 
       const result = await window.ipcRenderer
-        .invoke(EVENT_START_SERVER, JSON.parse(JSON.stringify(this.optionStore)));
+        .invoke(EVENT_START_SERVER, this.optionStore.toJson());
       log.info("Start mod result", result);
 
       if (!result.success) {
