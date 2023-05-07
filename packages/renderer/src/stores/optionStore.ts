@@ -5,6 +5,7 @@ import log from "electron-log";
 
 const defaultConfig = {
   autoStartGame: false,
+  autoStartMod: false,
   gameStore: "MS Store",
   selectedServer: "mt.google.com",
   mapboxAccessToken: null,
@@ -22,7 +23,7 @@ export const useOptionStore = defineStore({
   id: "options",
   state: () => {
     // @ts-ignore
-    return store.get("config", defaultConfig) as object;
+    return {...defaultConfig, ...store.get("config", defaultConfig) as object};
   },
   actions: {
     reset() {

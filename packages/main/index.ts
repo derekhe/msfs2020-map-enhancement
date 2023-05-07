@@ -64,20 +64,15 @@ async function createWindow() {
   enable(win.webContents);
 
   if (app.isPackaged) {
-    win.loadFile(join(__dirname, "../renderer/index.html"));
+    await win.loadFile(join(__dirname, "../renderer/index.html"));
   } else {
     // 🚧 Use ['ENV_NAME'] avoid vite:define plugin
     const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_DEV_SERVER_PORT"]}`;
 
-    win.loadURL(url);
-    win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.1.4_0"));
+    await win.loadURL(url);
+    await win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.1.4_0"));
     win.webContents.openDevTools();
   }
-
-  // Test active push message to Renderer-process
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
-  });
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {

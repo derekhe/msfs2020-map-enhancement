@@ -59,12 +59,17 @@ export default {
       STATUS
     };
   },
+  mounted() {
+    if (this.optionStore.autoStartMod) {
+      log.info("auto start mod");
+      setTimeout(this.startServer, 3000);
+    }
+  },
   computed: {
     providers() {
       return _.keys(MapProviders);
     },
     description() {
-      console.log(this.optionStore.selectedServer);
       return MapProviders[this.optionStore.selectedServer].description;
     },
     serverCheckSuccess() {
