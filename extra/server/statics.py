@@ -7,3 +7,6 @@ class Statics:
     numOfImageLoaded: int
     lastLoadingImageUrl: str
     lastLoadTime: datetime
+    lastLoadingTime: float
+    cacheHit: int
+    bytesLoaded: int
