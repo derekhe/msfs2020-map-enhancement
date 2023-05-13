@@ -1,11 +1,11 @@
 import { app, BrowserWindow, shell, protocol, ipcMain, crashReporter } from "electron";
 import { release } from "os";
-import { join, resolve } from "path";
+import path, { join, resolve } from "path";
 import Store from "electron-store";
 import log from "electron-log";
 import {
   EVENT_CHECK_PORT,
-  EVENT_CHECK_UPDATE,
+  EVENT_CHECK_UPDATE, EVENT_COLLECT_LOGS,
   EVENT_START_GAME,
   EVENT_START_SERVER,
   EVENT_STOP_SERVER
@@ -19,6 +19,9 @@ import { autoUpdater } from "electron-updater";
 
 import { initialize } from "@electron/remote/main";
 import { enable } from "@electron/remote/dist/src/main/server";
+// @ts-ignore
+import adm_zip from "adm-zip";
+import moment from "moment";
 
 crashReporter.start({
   productName: "msfs2020-map-enhancement",
@@ -78,7 +81,7 @@ async function createWindow() {
 
     await win.loadURL(url);
     await win.webContents.session.loadExtension(resolve("./tools/vue-devtools/6.1.4_0"));
-    win.webContents.openDevTools();
+    //win.webContents.openDevTools();
   }
 
   // Make all links open with the browser, not with the application
@@ -175,3 +178,19 @@ ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
   await startGame(arg["distributor"]);
 });
 
+ipcMain.handle(EVENT_COLLECT_LOGS, () => {
+  const appLog = (path.dirname(log.transports.file.getFile().path));
+  const nginxLog = app.isPackaged ? path.join(__dirname, "../../../extra/nginx/logs/") : path.join(__dirname, "../../extra/nginx/logs/");
+  const imageServerLog = app.isPackaged ? path.join(__dirname, "../../../extra/server/logs/") : path.join(__dirname, "../../extra/server/logs/");
+  log.info("Found log files in", appLog, nginxLog, imageServerLog);
+  log.info("Creating zip file")
+  const zip = new adm_zip();
+  zip.addLocalFolder(appLog);
+  zip.addLocalFolder(nginxLog);
+  zip.addLocalFolder(imageServerLog);
+  let targetFileName = path.join(appLog, "../" + moment().format("YYYYMMDDHHmmss") + ".zip");
+  log.info("Filename", targetFileName);
+  zip.writeZip(targetFileName);
+  log.info("Done creating zip file")
+  return targetFileName;
+});
