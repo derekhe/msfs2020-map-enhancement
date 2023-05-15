@@ -1,7 +1,7 @@
 <template>
   <div class="hero h-full bg-base-200">
     <div class="hero-content text-center">
-      <div class="max-w-md">
+      <div class="max-w-3/4">
         <h1 class="text-5xl font-bold">MSFS2020 Map Enhancement</h1>
         <p class="py-6">By He Sicong</p>
         <div class="divider"></div>
@@ -16,6 +16,18 @@
                                                     target="_blank">Old
             Releases</a></button>
         </div>
+        <div class="divider content-center"></div>
+        <p class="text-2xl font-extrabold">Donate (捐赠)</p>
+        <p>Please aware this mod is totally free.</p>
+        <p>请注意该软件完全免费，目前有渠道在出售此软件，请注意识别。</p>
+        <p>Paypal/支付宝/微信</p>
+        <div class="flex space-x-4 justify-center">
+          <button class="btn w-32 h-32 btn-info btn-square" @click="donate">
+            <a href="https://www.paypal.com/paypalme/siconghe?country.x=C2&locale.x=en_US" target="_blank">
+              PAYPAL</a></button>
+          <img src="../../../public/images/alipay.jpg" class="w-32 h-32" alt="alipay" />
+          <img src="../../../public/images/wechat.jpg" class="w-32 h-32" alt="wechat" />
+        </div>
         <div class="divider"></div>
         <div class="indicator" v-if="this.statusStore.updateInfo">
           <div class="indicator-item indicator-bottom">
@@ -25,7 +37,7 @@
           <div class="card border">
             <div class="card-body">
               <h2 class="card-title">New version: {{ releaseVersion }}</h2>
-              <div v-html="releaseNotes"></div>
+              <div class="w-96 text-left" v-html="releaseNotes"></div>
             </div>
           </div>
         </div>

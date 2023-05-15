@@ -7,7 +7,7 @@
         <div class="container p-4 overflow-y-auto h-full">
           <Start v-show="activeMenu === MenuItems.HOME" />
           <Options class="h-[42rem]" v-show="activeMenu === MenuItems.OPTION" />
-          <About v-show="activeMenu === MenuItems.ABOUT" :update-info="updateInfo" />
+          <About class="h-[42rem]" v-show="activeMenu === MenuItems.ABOUT" :update-info="updateInfo" />
           <ReportIssue v-show="activeMenu===MenuItems.REPORT_ISSUE" />
         </div>
       </div>
@@ -17,6 +17,7 @@
       <div class="items-center grid-flow-col">
         <ServerStatus name="Image Server" :server-check-result="statusStore.imageAccessHealthCheckResult" />
         <ServerStatus name="Nginx Server" :server-check-result="statusStore.nginxServerHealthCheckResult" />
+        <p class="content-end">本软件完全免费</p>
       </div>
     </footer>
   </div>
