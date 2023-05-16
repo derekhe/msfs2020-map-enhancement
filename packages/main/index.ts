@@ -30,8 +30,6 @@ crashReporter.start({
   uploadToServer: true
 });
 
-app.disableHardwareAcceleration();
-
 initialize();
 
 // Set application name for Windows 10+ notifications
@@ -181,15 +179,20 @@ ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   const appLog = (path.dirname(log.transports.file.getFile().path));
   const nginxLog = app.isPackaged ? path.join(__dirname, "../../../extra/nginx/logs/") : path.join(__dirname, "../../extra/nginx/logs/");
   const imageServerLog = app.isPackaged ? path.join(__dirname, "../../../extra/server/logs/") : path.join(__dirname, "../../extra/server/logs/");
+
   log.info("Found log files in", appLog, nginxLog, imageServerLog);
   log.info("Creating zip file")
+
   const zip = new adm_zip();
   zip.addLocalFolder(appLog);
   zip.addLocalFolder(nginxLog);
   zip.addLocalFolder(imageServerLog);
+
   let targetFileName = path.join(appLog, "../" + moment().format("YYYYMMDDHHmmss") + ".zip");
+
   log.info("Filename", targetFileName);
   zip.writeZip(targetFileName);
-  log.info("Done creating zip file")
+  log.info("Done creating zip file");
+
   return targetFileName;
 });
