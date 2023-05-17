@@ -30,6 +30,8 @@ crashReporter.start({
   uploadToServer: true
 });
 
+app.commandLine.appendSwitch('--no-sandbox')
+
 initialize();
 
 // Set application name for Windows 10+ notifications
