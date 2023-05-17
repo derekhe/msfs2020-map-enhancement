@@ -1,5 +1,4 @@
 import { app, BrowserWindow, shell, protocol, ipcMain, crashReporter } from "electron";
-import { release } from "os";
 import path, { join, resolve } from "path";
 import Store from "electron-store";
 import log from "electron-log";
@@ -30,7 +29,7 @@ crashReporter.start({
   uploadToServer: true
 });
 
-app.commandLine.appendSwitch('--no-sandbox')
+app.commandLine.appendSwitch("--no-sandbox");
 
 initialize();
 
@@ -183,7 +182,7 @@ ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   const imageServerLog = app.isPackaged ? path.join(__dirname, "../../../extra/server/logs/") : path.join(__dirname, "../../extra/server/logs/");
 
   log.info("Found log files in", appLog, nginxLog, imageServerLog);
-  log.info("Creating zip file")
+  log.info("Creating zip file");
 
   const zip = new adm_zip();
   zip.addLocalFolder(appLog);
