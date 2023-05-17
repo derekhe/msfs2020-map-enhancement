@@ -12,7 +12,8 @@
   extraResources: [
     "./extra/**",
     "./extra/nginx/temp/**",
-    "!**/*.log"
+    "!**/*.log",
+    "public/icon.png"
   ],
   productName: "MSFS2020 Map Enhancement",
   appId: "com.april1985.msfs2020-map-enhancement",
