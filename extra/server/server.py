@@ -202,12 +202,6 @@ def quad_tiles(path: str) -> Response:
     for k, v in headers.items():
         response.headers[k] = v
 
-    global server_statics
-    server_statics.numOfImageLoaded += 1
-
-    server_statics.lastLoadingImageUrl = get_selected_map_provider().quadkey_url(quadkey)
-    server_statics.lastLoadTime = datetime.utcnow()
-
     return response
 
 
@@ -226,8 +220,6 @@ def download_from_url(url):
             url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
             verify=False)
 
-        server_statics.lastLoadingTime = resp.elapsed.total_seconds()
-
         logger.info("Downloaded from: %s, speed: %f", url, resp.elapsed.total_seconds())
 
         content = resp.content
@@ -235,9 +227,9 @@ def download_from_url(url):
             raise InvalidContentException
 
         cache.set(url, content)
-        server_statics.bytesLoaded += len(content)
+        server_statics.report_image_loaded(url, resp.elapsed.total_seconds(), len(content))
     else:
-        server_statics.cacheHit += 1
+        server_statics.report_cache_hit(url)
         print("Use cached:", url)
 
     return content
@@ -325,8 +317,15 @@ logger.info("Started with config %s", argv)
 
 if argv.config is not None:
     server_configs = json.loads(argv.config)
-    logger.info("Start with %s", server_configs)
-    config_server()
+else:
+    logger.info("Use default config")
+    server_configs = {"autoStartGame": True, "autoStartMod": False, "gameStore": "MS Store",
+                      "selectedServer": "Bing Map (Latest)", "mapboxAccessToken": None, "enableHighLOD": True,
+                      "proxyAddress": "", "cacheLocation": "D:\\cache", "cacheEnabled": True, "cacheSizeGB": "100",
+                      "firstTime": False}
+
+logger.info("Start with %s", server_configs)
+config_server()
 
 disable_endpoint_logs()
 app.run(port=39871, threaded=True)

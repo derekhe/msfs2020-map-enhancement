@@ -20,7 +20,7 @@
         <div class="stat-title">Total Loaded Image</div>
         <div class="stat-value text-primary">{{ statics.numOfImageLoaded }}</div>
         <div class="stat-desc">{{ lastLoadTimeFormatted }}</div>
-        <div class="stat-desc">({{statics.lastLoadingTime.toFixed(1)}}s)</div>
+        <div class="stat-desc">({{ statics.lastLoadingTime.toFixed(1) }}s)</div>
       </div>
       <div class="stat">
         <div class="stat-title">Loaded Image</div>
@@ -33,7 +33,7 @@
       </div>
       <div class="stat">
         <div class="stat-title">Cache Hit</div>
-        <div class="stat-value text-primary">{{ statics.cacheHit }}/{{ cacheRate }}%</div>
+        <div class="stat-value text-primary">{{ cacheHit }}/{{ cacheRate }}%</div>
       </div>
       <div class="stat">
         <div class="stat-title">Data Usage</div>
@@ -46,6 +46,7 @@
 <script>
 import got from "got";
 import moment from "moment";
+import { useOptionStore } from "../../stores/optionStore";
 
 let getStaticInfoInterval = null;
 let imageRndInterval = null;
@@ -54,6 +55,7 @@ let imageRndInterval = null;
 export default {
   name: "RuntimeInfo",
   data() {
+    let optionStore = useOptionStore();
     return {
       imageRnd: 0,
       statics: {
@@ -63,7 +65,8 @@ export default {
         lastLoadingTime: 0,
         cacheHit: 0,
         bytesLoaded: 0
-      }
+      },
+      optionStore
     };
   },
   async mounted() {
@@ -86,8 +89,11 @@ export default {
     usedInMB() {
       return Math.round(this.statics.bytesLoaded / 1024 / 1024);
     },
+    cacheHit() {
+      return this.statics.cacheHit;
+    },
     cacheRate() {
-      return (this.statics.cacheHit / this.statics.numOfImageLoaded * 100).toFixed(1);
+      return (this.cacheHit / this.statics.numOfImageLoaded * 100).toFixed(1);
     }
   },
   methods: {
