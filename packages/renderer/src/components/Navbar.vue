@@ -5,14 +5,17 @@
 </template>
 
 <script>
+import { useStatusStore } from "../stores/statusStore";
+
 export default {
   name: "Navbar",
-  data(){
+  data() {
+    let statusStore = useStatusStore();
     return {
-      appVersion: window.require('@electron/remote').app.getVersion()
-    }
+      appVersion: statusStore.appVersion
+    };
   }
-}
+};
 </script>
 
 <style scoped>

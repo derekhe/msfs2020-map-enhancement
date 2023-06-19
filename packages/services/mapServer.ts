@@ -14,8 +14,10 @@ export async function startMapServer(options: any): Promise<void> {
   let args = ["server.py"];
   args.push("--config", options);
 
-  imageServer = spawn("./python/python.exe", args, {
-    cwd: app.isPackaged ? path.join(__dirname, "../../../extra/server") : path.join(__dirname, "../../extra/server"),
+  let pythonProgramDir = app.isPackaged ? path.join(__dirname, "../../../extra/server/") : path.join(__dirname, "../../extra/server/");
+
+  imageServer = spawn("./python/pymsfs2020.exe", args, {
+    cwd: pythonProgramDir,
     stdio: "ignore"
   });
 
@@ -25,12 +27,20 @@ export async function startMapServer(options: any): Promise<void> {
     stdio: "ignore"
   });
 
+  imageServer.on("close", function(code) {
+    log.log(`Image server closed`, code);
+  });
+
+  imageServer.on("error", (err) => {
+    log.error(`Image server Failed to start process`, err);
+  });
+
   nginxProcess.on("close", function(code) {
-    log.log(`Process closed`, code);
+    log.log(`Nginx Process closed`, code);
   });
 
   nginxProcess.on("error", (err) => {
-    log.error(`Failed to start process`, err);
+    log.error(`Nginx Failed to start process`, err);
   });
 
   log.info("Started nginx server");
@@ -40,7 +50,7 @@ export async function stopServer(): Promise<void> {
   log.info("Force killing server");
 
   try {
-    await execAsync("taskkill", ["/F", "/IM", "python.exe"], {
+    await execAsync("taskkill", ["/F", "/IM", "pymsfs2020.exe"], {
       shell: true
     });
   } catch (e) {

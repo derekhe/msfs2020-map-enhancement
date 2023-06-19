@@ -47,6 +47,7 @@
 import got from "got";
 import moment from "moment";
 import { useOptionStore } from "../../stores/optionStore";
+import log from "electron-log";
 
 let getStaticInfoInterval = null;
 let imageRndInterval = null;
@@ -75,7 +76,9 @@ export default {
       this.imageRnd = moment().unix();
     }, 100, 100);
   },
-  async unmounted() {
+  async beforeUnmount() {
+    log.info("Runtime info:" + JSON.stringify(this.statics));
+
     clearInterval(getStaticInfoInterval);
     clearInterval(imageRndInterval);
   },
