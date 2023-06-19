@@ -202,11 +202,25 @@ ipcMain.handle(EVENT_CHECK_PORT, async () => {
 });
 
 ipcMain.handle(EVENT_CHECK_UPDATE, async () => {
-  autoUpdater.autoDownload = false;
+  autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = false;
   let updateCheckResult = await autoUpdater.checkForUpdates();
   return updateCheckResult.updateInfo;
 });
+
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+  }
+
+  dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    if (returnValue.response === 0) autoUpdater.quitAndInstall()
+  })
+})
 
 ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
   await startGame(arg["distributor"]);
