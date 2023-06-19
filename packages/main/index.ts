@@ -62,7 +62,7 @@ async function createWindow() {
   let store = new Store();
   let config = store.get("config", { userId: uuidv4() }) as object;
   // @ts-ignore
-  log.transports.remote.client = { "uuid": config.userId };
+  log.transports.remote.client = { "uuid": config.userId, "version": app.getVersion() };
   log.info("Application started");
   log.info("Version: " + app.getVersion());
 

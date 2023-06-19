@@ -27,7 +27,10 @@ export const useOptionStore = defineStore({
   state: () => {
     // @ts-ignore
     let options = { ...defaultConfig, ...store.get("config", defaultConfig) as object };
-    log.transports.remote.client = { "uuid": options.userId };
+    log.transports.remote.client = {
+      "uuid": options.userId,
+      "version": window.require("@electron/remote").app.getVersion()
+    };
     return options;
   },
   actions: {
