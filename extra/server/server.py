@@ -93,30 +93,6 @@ def last_image() -> Response:
 def statics() -> Response:
     return jsonify(server_statics)
 
-
-@app.route('/tiles/mtx<dummy>')
-def mtx(dummy: str = None) -> Response:
-    logger.info("Handing request to %s", request.url)
-    request_header = {}
-    for k, v in request.headers:
-        request_header[k] = v
-
-    logger.info("Downloading from: %s", request.url)
-
-    url = request.url.replace(request.host, "kh.ssl.ak.tiles.virtualearth.net.edgekey.net").replace("http://",
-                                                                                                    "https://")
-
-    proxy_address = server_configs['proxyAddress']
-    remote_response = requests.get(
-        url, proxies={"https": proxy_address, "http": proxy_address}, timeout=30,
-        verify=False, headers=request_header)
-
-    response = make_response(remote_response.content)
-    for k, v in remote_response.headers.items():
-        response.headers[k] = v
-    return response
-
-
 @app.route("/tiles/<tile_x>/<tile_y>/<level_of_detail>")
 def tiles(tile_x: str, tile_y: str, level_of_detail: str) -> Response:
     url = f'https://mt.google.com/vt/lyrs=s&x={tile_x}&y={tile_y}&z={level_of_detail}'

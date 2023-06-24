@@ -48,6 +48,7 @@ import got from "got";
 import moment from "moment";
 import { useOptionStore } from "../../stores/optionStore";
 import log from "electron-log";
+import { useStatusStore } from "../../stores/statusStore";
 
 let getStaticInfoInterval = null;
 let imageRndInterval = null;
@@ -67,7 +68,8 @@ export default {
         cacheHit: 0,
         bytesLoaded: 0
       },
-      optionStore
+      optionStore,
+      statusStore: useStatusStore()
     };
   },
   async mounted() {
@@ -78,6 +80,7 @@ export default {
   },
   async beforeUnmount() {
     log.info("Runtime info:" + JSON.stringify(this.statics));
+    log.info("Total run time(s):" + moment.duration((moment.now() - this.statusStore.appStartTime), 'ms').asSeconds());
 
     clearInterval(getStaticInfoInterval);
     clearInterval(imageRndInterval);
