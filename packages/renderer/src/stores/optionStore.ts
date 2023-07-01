@@ -33,7 +33,7 @@ export const useOptionStore = defineStore({
       "version": window.require("@electron/remote").app.getVersion()
     };
 
-    if(!options.remoteLogEnabled){
+    if (!options.remoteLogEnabled) {
       log.transports.remote.level = false;
     }
 
