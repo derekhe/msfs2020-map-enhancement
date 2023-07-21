@@ -1,9 +1,9 @@
 import { app } from "electron";
 import { execFile } from "child_process";
-import path from "path";
-// @ts-ignore
 import log from "electron-log";
 import util from "util";
+import path from "path";
+// @ts-ignore
 
 const execAsync = util.promisify(execFile);
 
@@ -17,10 +17,10 @@ export const addCertificate = async (): Promise<void> => {
       "key.pem",
       "-cert-file",
       "cert.pem",
+      "*.virtualearth.net",
+      "*.azureedge.net",
       "kh.ssl.ak.tiles.virtualearth.net",
       "khstorelive.azureedge.net",
-      "*.virtualearth.net",
-      "*.azureedge.net"
     ],
     {
       cwd: app.isPackaged ? path.join(__dirname, "../../../extra/nginx/conf") : path.join(__dirname, "../../extra/nginx/conf"),
