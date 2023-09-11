@@ -1,4 +1,0 @@
-POST http://localhost:39871/configs
-Content-Type: application/json
-
-{"autoStartGame":true,"gameStore":"MS Store","selectedServer":"Bing Map (Latest)","mapboxAccessToken":null,"enableHighLOD":false,"proxyAddress":"http://192.168.50.15:1082","cacheLocation":"D:\\cache","cacheEnabled":true,"cacheSizeGB":"20"}
