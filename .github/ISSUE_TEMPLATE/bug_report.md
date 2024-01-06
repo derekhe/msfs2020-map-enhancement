@@ -7,16 +7,17 @@ assignees: ''
 
 ---
 
+**Before you raise a bug**
+
+[] For using this app, I have read and tried solution in mentioned by manual: https://github.com/derekhe/msfs2020-map-enhancement/wiki/Manual-EN
+[] For license issue, I have read the readme in https://github.com/derekhe/msfs2020-map-enhancement/wiki/License and also filled the form in https://key.aiflygo.com/
+
 **Describe the bug**
 
 Please describe the bug in detail to help me understand the scenario
 
-**MSFS version:**
- - msstore or steam
- - MSFS2020 Version [e.g. 22]
-
-**Mod version:**
-- Mod version
+**Map Enhancement version:**
+- Map Enhancement version
 
 **Device ID**
 - Device ID
