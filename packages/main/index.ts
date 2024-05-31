@@ -226,10 +226,6 @@ autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
   });
 });
 
-ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
-  await startGame(arg["distributor"]);
-});
-
 ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   const appLog = (path.dirname(log.transports.file.getFile().path));
   const nginxLog = app.isPackaged ? path.join(__dirname, "../../../extra/nginx/logs/") : path.join(__dirname, "../../extra/nginx/logs/");
@@ -250,4 +246,8 @@ ipcMain.handle(EVENT_COLLECT_LOGS, () => {
   log.info("Done creating zip file");
 
   return targetFileName;
+});
+
+ipcMain.handle(EVENT_START_GAME, async (event, arg) => {
+  await startGame(arg["distributor"]);
 });
