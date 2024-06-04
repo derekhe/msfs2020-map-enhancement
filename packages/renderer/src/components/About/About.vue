@@ -45,7 +45,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { useStatusStore } from "../../stores/statusStore";
 
