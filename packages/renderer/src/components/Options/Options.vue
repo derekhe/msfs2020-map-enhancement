@@ -4,8 +4,8 @@
     <MapOptions />
     <CacheOptions />
     <ProxySettings />
-    <Privacy/>
-    <ResetToDefault/>
+    <Privacy />
+    <ResetToDefault />
   </div>
 </template>
 
@@ -24,6 +24,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
