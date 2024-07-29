@@ -5,8 +5,6 @@ import { execFile } from "child_process";
 const execAsync = util.promisify(execFile);
 
 export async function startGame(distributor: string): Promise<void> {
-  log.info("start game " + distributor);
-
   if (distributor === "MS Store") {
     try {
       await execAsync(
