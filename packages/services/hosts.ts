@@ -47,5 +47,5 @@ function findHostsFile() {
     }
   }
 
-  throw new Error("Can't find host file");
+  throw new Error("Can't find host file, please try again");
 }
