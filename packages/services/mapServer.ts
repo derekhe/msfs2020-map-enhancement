@@ -27,7 +27,7 @@ export async function startMapServer(options: any): Promise<void> {
     stdio: "ignore"
   });
 
-  imageServer.on("close", function(code) {
+  imageServer.on("close", function (code) {
     log.log(`Image server closed`, code);
   });
 
@@ -35,7 +35,7 @@ export async function startMapServer(options: any): Promise<void> {
     log.error(`Image server Failed to start process`, err);
   });
 
-  nginxProcess.on("close", function(code) {
+  nginxProcess.on("close", function (code) {
     log.log(`Nginx Process closed`, code);
   });
 
