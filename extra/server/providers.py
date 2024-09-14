@@ -105,7 +105,6 @@ class ArcGIS(TileBasedMapProvider):
         logger.info("Check sum %s", hexdigest)
         return hexdigest == 'f27d9de7f80c13501f470595e327aa6d'
 
-
 class BingMap(MapProvider):
     def __init__(self):
         super().__init__("Bing Map (Latest)")
