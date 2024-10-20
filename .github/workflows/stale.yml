@@ -1,0 +1,21 @@
+name: Close Stale Issues
+
+on:
+  schedule:
+    - cron: "0 0 0 * *"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Close stale issues
+        uses: actions/stale@v1
+        with:
+          days: 30
+          stale-issue-label: "stale"
+          close-issue-label: "closed"
+          stale-issue-message: "This issue has been inactive for 30 days. If you still need help, please provide more details or check if it's already been resolved."
+          close-issue-message: "This issue has been closed due to inactivity. If you still need help, please open a new issue."
