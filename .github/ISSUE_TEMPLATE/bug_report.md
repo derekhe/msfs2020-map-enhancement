@@ -7,13 +7,15 @@ assignees: ''
 
 ---
 
+Before submit an issue, please have a look the user manual for FAQ: https://github.com/derekhe/msfs2020-map-enhancement/wiki/Manual-EN
+
 **Describe the bug**
 
 Please describe the bug in detail to help me understand the scenario
 
 **MSFS version:**
  - msstore or steam
- - MSFS2020 Version [e.g. 22]
+ - MSFS2020 or 2024?
 
 **Mod version:**
 - Mod version
