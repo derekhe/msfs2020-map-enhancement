@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-Before submit an issue, please have a look the user manual for FAQ: https://github.com/derekhe/msfs2020-map-enhancement/wiki/Manual-EN
+Before submit an issue, please have a look the user manual for FAQ: https://www.aiflygo.com/docs/msfs-map-enhancement/faq/
 
 **Describe the bug**
 
