@@ -1,5 +1,6 @@
 ---
 name: Bug report
+description: Report a bug to help us improve this project
 title: 'Bug: '
 labels:
   - bug
