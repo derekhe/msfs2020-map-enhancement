@@ -12,6 +12,15 @@ body:
       value: |
         Before submitting an issue, please check the FAQ: https://www.aiflygo.com/docs/msfs-map-enhancement/faq/
 
+  - type: checkboxes
+    id: faq_checked
+    attributes:
+      label: FAQ Confirmation
+      description: Please confirm you have read the FAQ before submitting.
+      options:
+        - label: I have read the FAQ document and confirmed my issue is not already addressed there.
+          required: true
+
   - type: input
     id: bug_description
     attributes:
