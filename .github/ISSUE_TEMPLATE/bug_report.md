@@ -5,27 +5,60 @@ title: ''
 labels: ''
 assignees: ''
 
----
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting an issue, please check the FAQ: https://www.aiflygo.com/docs/msfs-map-enhancement/faq/
 
-Before submit an issue, please have a look the user manual for FAQ: https://www.aiflygo.com/docs/msfs-map-enhancement/faq/
+  - type: input
+    id: bug_description
+    attributes:
+      label: Describe the bug
+      description: Please describe the bug in detail to help understand the scenario
+      placeholder: A clear and concise description of what the bug is
+    validations:
+      required: true
 
-**Describe the bug**
+  - type: dropdown
+    id: msfs_version
+    attributes:
+      label: MSFS version
+      description: Select your MSFS version
+      options:
+        - MS Store / MSFS 2020
+        - MS Store / MSFS 2024
+        - Steam / MSFS 2020
+        - Steam / MSFS 2024
+    validations:
+      required: true
 
-Please describe the bug in detail to help me understand the scenario
+  - type: input
+    id: mod_version
+    attributes:
+      label: Mod version
+      description: Enter the mod version you are using
+      placeholder: e.g., v7.3.0
+    validations:
+      required: true
 
-**MSFS version:**
- - msstore or steam
- - MSFS2020 or 2024?
+  - type: input
+    id: device_id
+    attributes:
+      label: Device ID
+      description: Please provide your Device ID, the Device ID can be found in the license page.
+    validations:
+      required: true
 
-**Mod version:**
-- Mod version
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If possible, provide screenshots of the mod and MSFS
+      placeholder: You can paste images here or drag-and-drop them into this box
 
-**Device ID**
-- Device ID
-
-**Screenshots**
-
-Please provide me screenshots for the mod and msfs2020 if possible
-
-**Additional context**
-Add any other context about the problem here.
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here
