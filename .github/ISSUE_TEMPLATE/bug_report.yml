@@ -66,7 +66,9 @@ body:
       label: Screenshots
       description: If possible, provide screenshots of the mod and MSFS
       placeholder: You can paste images here or drag-and-drop them into this box
-
+    validations:
+      required: true
+      
   - type: textarea
     id: additional_context
     attributes:
