@@ -68,6 +68,13 @@ body:
       placeholder: You can paste images here or drag-and-drop them into this box
     validations:
       required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Latitude and Longitude of the bug area
+      description: Enter the approximate coordinates where the issue occurs (if applicable)
+      placeholder: e.g., 39.9042, 116.4074 (optional)
       
   - type: textarea
     id: additional_context
